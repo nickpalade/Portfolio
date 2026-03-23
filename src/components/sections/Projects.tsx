@@ -140,7 +140,7 @@ function ProjectCard({ project, index, isMobile }: { project: Project; index: nu
       >
         <DecorativePanel index={index} accent={project.accent} isMobile={isMobile} />
 
-        <div className="flex-1 p-8 space-y-4">
+        <div className="flex-1 p-4 sm:p-8 space-y-4">
           <h3
             className="text-2xl font-semibold"
             style={{
@@ -220,7 +220,7 @@ export default function Projects() {
     <section
       id="projects"
       ref={sectionRef}
-      className="min-h-screen flex flex-col justify-center px-4 py-24"
+      className="min-h-screen flex flex-col justify-center px-2 sm:px-4 py-24"
     >
       <div className="container mx-auto max-w-5xl space-y-12">
         <motion.div className="space-y-3" style={{ y: headingY }}>

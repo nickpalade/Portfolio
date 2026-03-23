@@ -8,7 +8,7 @@ export default function Contact() {
   const isInView = useInView(cardRef, { once: true, margin: "-10% 0px" });
 
   return (
-    <section id="contact" className="min-h-[60vh] flex flex-col justify-center px-4 py-24">
+    <section id="contact" className="min-h-[60vh] flex flex-col justify-center px-2 sm:px-4 py-24">
       <div className="container mx-auto max-w-2xl text-center space-y-8 fade-in">
         <div className="space-y-3">
           <motion.h2
@@ -36,7 +36,7 @@ export default function Contact() {
           initial={{ opacity: 0, y: 40, boxShadow: "0 0px 0px rgba(121,144,219,0)" }}
           animate={isInView ? { opacity: 1, y: 0, boxShadow: "0 0px 0px rgba(121,144,219,0)" } : { opacity: 0, y: 40, boxShadow: "0 0px 0px rgba(121,144,219,0)" }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="glass-card rounded-lg p-10 space-y-6"
+          className="glass-card rounded-lg p-6 sm:p-10 space-y-6"
           whileHover={{ boxShadow: "0 24px 64px rgba(121,144,219,0.25)" }}
         >
           <motion.div

@@ -288,11 +288,19 @@ export function MouseGradient() {
     };
   }, []);
 
+  // Blur is applied to the wrapper div rather than the canvas element itself.
+  // On Safari iOS, filter on a position:fixed canvas causes flickering during scroll.
+  // The canvas gets its own GPU layer via transform to stay stable during iOS momentum scroll.
   return (
-    <canvas
-      ref={canvasRef}
-      className="pointer-events-none fixed inset-0 w-full h-full"
-      style={{ zIndex: -1, filter: "blur(60px)", willChange: "transform" }}
-    />
+    <div
+      className="pointer-events-none fixed inset-0"
+      style={{ zIndex: -1, filter: "blur(60px)" }}
+    >
+      <canvas
+        ref={canvasRef}
+        className="w-full h-full"
+        style={{ transform: "translateZ(0)" }}
+      />
+    </div>
   );
 }

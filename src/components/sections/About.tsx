@@ -59,7 +59,7 @@ export default function About() {
   const techInView = useInView(techRef, { once: true, margin: "-100px" });
 
   return (
-    <section id="about" ref={sectionRef} className="min-h-screen flex flex-col justify-center px-4 py-24">
+    <section id="about" ref={sectionRef} className="min-h-screen flex flex-col justify-center px-2 sm:px-4 py-24">
       <div className="container mx-auto max-w-5xl space-y-12">
         <div className="grid gap-12 md:grid-cols-2 items-center">
           <motion.div

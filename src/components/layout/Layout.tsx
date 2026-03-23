@@ -72,7 +72,7 @@ function Navbar() {
           </motion.div>
           <span className="font-bold text-lg hidden sm:inline-block">Nick</span>
         </div>
-        <nav className="flex items-center gap-4 md:gap-6 text-sm font-medium flex-1">
+        <nav className="flex items-center gap-1 sm:gap-4 md:gap-6 text-sm font-medium flex-1">
           {navLinks.map((link) => {
             const Icon = link.icon;
             const isActive = activeSection === link.href;
@@ -82,7 +82,7 @@ function Navbar() {
                 href={link.href}
                 onClick={(e) => handleNav(e, link.href)}
                 className={cn(
-                  "relative overflow-hidden flex items-center gap-2 transition-colors hover:text-primary",
+                  "relative overflow-hidden flex items-center gap-2 transition-colors hover:text-primary p-2 sm:p-0",
                   isActive ? "text-primary" : "text-muted-foreground"
                 )}
                 whileHover={isMobile ? undefined : { y: -2 }}
