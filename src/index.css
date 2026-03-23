@@ -1,0 +1,215 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Space+Mono:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 250, 250, 252;
+    --foreground: 20, 20, 30;
+    --card: 255, 255, 255;
+    --card-foreground: 20, 20, 30;
+    --popover: 255, 255, 255;
+    --popover-foreground: 20, 20, 30;
+    --primary: 121, 144, 219;
+    --primary-foreground: 255, 255, 255;
+    --secondary: 165, 180, 252;
+    --secondary-foreground: 255, 255, 255;
+    --muted: 235, 235, 240;
+    --muted-foreground: 110, 110, 120;
+    --accent: 121, 144, 219;
+    --accent-foreground: 255, 255, 255;
+    --destructive: 220, 50, 50;
+    --destructive-foreground: 255, 255, 255;
+    --border: 180, 200, 240;
+    --input: 180, 200, 240;
+    --ring: 121, 144, 219;
+    --radius: 1rem;
+  }
+
+  .dark {
+    --background: 24, 24, 24;
+    --foreground: 236, 236, 236;
+    --card: 34, 34, 34;
+    --card-foreground: 236, 236, 236;
+    --popover: 34, 34, 34;
+    --popover-foreground: 236, 236, 236;
+    --primary: 121, 144, 219;
+    --primary-foreground: 255, 255, 255;
+    --secondary: 165, 180, 252;
+    --secondary-foreground: 236, 236, 236;
+    --muted: 56, 56, 56;
+    --muted-foreground: 160, 160, 160;
+    --accent: 121, 144, 219;
+    --accent-foreground: 236, 236, 236;
+    --destructive: 239, 68, 68;
+    --destructive-foreground: 250, 250, 250;
+    --border: 60, 100, 180;
+    --input: 60, 100, 180;
+    --ring: 121, 144, 219;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  ::selection {
+    background-color: rgba(121, 144, 219, 0.3);
+    color: inherit;
+  }
+
+  body::-webkit-scrollbar {
+    display: none;
+  }
+
+  html {
+    background-color: rgb(var(--background));
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply text-foreground font-sans antialiased;
+    background-color: transparent;
+    min-height: 100vh;
+    background-attachment: fixed;
+    position: relative;
+    z-index: 0;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-br from-primary to-[#A5B4FC];
+  }
+
+  .bg-primary-gradient {
+    @apply bg-gradient-to-br from-[#627BC9] to-[#8C9FE6] text-primary-foreground shadow-md;
+  }
+
+  header {
+    background: linear-gradient(90deg, rgba(121, 144, 219, 0.04) 0%, rgba(165, 180, 252, 0.06) 100%);
+  }
+
+  .glass-card {
+    @apply bg-card/50 backdrop-blur-md border border-border shadow-2xl shadow-black/20;
+    background:
+      linear-gradient(135deg, rgba(var(--card), 0.6) 0%, rgba(121, 144, 219, 0.08) 100%),
+      linear-gradient(rgba(var(--card), 0.5), rgba(var(--card), 0.5));
+    background-blend-mode: multiply, normal;
+  }
+
+  .glow-primary {
+    box-shadow:
+      0 0 12px 1px rgb(var(--primary)),
+      0 0 16px -4px rgb(var(--primary)),
+      0 0 24px -8px rgb(var(--primary));
+  }
+
+  .fade-in {
+    animation: fade-in 0.5s ease-out;
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(var(--muted-foreground), 0.3);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(var(--muted-foreground), 0.5);
+  }
+
+  /* Shimmer animation */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shimmer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.06) 50%, transparent 100%);
+    transform: translateX(-100%);
+    animation: shimmer 2.5s infinite;
+  }
+
+  @keyframes shimmer {
+    to { transform: translateX(100%); }
+  }
+
+  /* Float animation */
+  .float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-12px); }
+  }
+
+  /* Gradient border */
+  .gradient-border {
+    position: relative;
+    border: none !important;
+  }
+
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(121, 144, 219, 0.6), rgba(165, 180, 252, 0.6));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* Slow spin animation */
+  .spin-slow {
+    animation: spin-slow 20s linear infinite;
+  }
+
+  @keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  /* Text shimmer animation */
+  .text-shimmer {
+    background: linear-gradient(90deg, rgb(var(--primary)) 0%, #c4b5fd 50%, rgb(var(--primary)) 100%);
+    background-size: 200% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: text-shimmer 3s linear infinite;
+  }
+
+  @keyframes text-shimmer {
+    to { background-position: 200% center; }
+  }
+}
