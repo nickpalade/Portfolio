@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 
 export default function CV() {
   const navigate = useNavigate();
+  const base = import.meta.env.BASE_URL;
+  const cvUrl = `${base}files/cv.pdf`;
 
   return (
     <div className="flex flex-col" style={{ height: "calc(100vh - 3.5rem)" }}>
@@ -26,7 +28,7 @@ export default function CV() {
 
         <motion.div whileHover={{ scale: 1.04, y: -1 }} whileTap={{ scale: 0.96 }} transition={{ type: "spring", stiffness: 400, damping: 17 }}>
           <Button size="sm" asChild className="gap-2">
-            <a href="/files/cv.pdf" download="Nick_Palade_CV.pdf">
+            <a href={cvUrl} download="Nick_Palade_CV.pdf">
               <Download className="h-4 w-4" />
               Download
             </a>
@@ -36,7 +38,7 @@ export default function CV() {
 
       {/* PDF viewer */}
       <motion.iframe
-        src="/files/cv.pdf"
+        src={cvUrl}
         className="flex-1 w-full border-0"
         title="CV"
         initial={{ opacity: 0 }}
