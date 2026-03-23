@@ -76,8 +76,7 @@ export default function Contact() {
 
           {/* Email buttons + hover copy row — outer div owns the leave handler so the
               copy button stays visible when moving from a button down onto it */}
-          <motion.div
-            layout
+          <div
             className="flex flex-col items-center gap-3"
             onMouseLeave={() => setActiveEmail(null)}
           >
@@ -134,7 +133,7 @@ export default function Contact() {
                 </motion.button>
               )}
             </AnimatePresence>
-          </motion.div>
+          </div>
 
           <div className="flex items-center justify-center gap-3 pt-2">
             <motion.div
