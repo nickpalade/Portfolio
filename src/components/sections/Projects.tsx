@@ -220,7 +220,7 @@ export default function Projects() {
     <section
       id="projects"
       ref={sectionRef}
-      className="min-h-screen flex flex-col justify-center px-2 sm:px-4 py-24"
+      className="min-h-screen flex flex-col justify-center md:px-4 py-24"
     >
       <div className="container mx-auto max-w-5xl space-y-12">
         <motion.div className="space-y-3" style={{ y: headingY }}>

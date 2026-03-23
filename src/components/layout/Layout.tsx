@@ -200,7 +200,7 @@ export function Layout() {
     <div className="relative flex min-h-screen flex-col bg-transparent text-foreground">
       <MouseGradient />
       <Navbar />
-      <main className="flex-1 flex flex-col px-0 sm:px-0">
+      <main className="flex-1 flex flex-col px-1 md:px-0">
         <Outlet />
       </main>
       <Footer />

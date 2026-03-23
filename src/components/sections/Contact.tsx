@@ -8,7 +8,7 @@ export default function Contact() {
   const isInView = useInView(cardRef, { once: true, margin: "-10% 0px" });
 
   return (
-    <section id="contact" className="min-h-[60vh] flex flex-col justify-center px-2 sm:px-4 py-24">
+    <section id="contact" className="min-h-[60vh] flex flex-col justify-center md:px-4 py-24">
       <div className="container mx-auto max-w-2xl text-center space-y-8 fade-in">
         <div className="space-y-3">
           <motion.h2
@@ -49,19 +49,34 @@ export default function Contact() {
           <p className="text-muted-foreground">
             The best way to reach me is by email. I'll get back to you as soon as I can.
           </p>
-          <motion.div
-            whileHover={{ scale: 1.04, y: -2 }}
-            whileTap={{ scale: 0.97 }}
-            transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            style={{ display: "inline-block" }}
-          >
-            <Button size="lg" asChild>
-              <a href="mailto:npalade09@gmail.com">
-                <Mail className="h-4 w-4" />
-                Send me an email
-              </a>
-            </Button>
-          </motion.div>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <motion.div
+              whileHover={{ scale: 1.04, y: -2 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              style={{ display: "inline-block" }}
+            >
+              <Button size="lg" asChild>
+                <a href="mailto:npalade09@gmail.com">
+                  <Mail className="h-4 w-4" />
+                  Personal
+                </a>
+              </Button>
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.04, y: -2 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              style={{ display: "inline-block" }}
+            >
+              <Button size="lg" variant="outline" asChild>
+                <a href="mailto:nick.a.palade@gmail.com">
+                  <Mail className="h-4 w-4" />
+                  Business
+                </a>
+              </Button>
+            </motion.div>
+          </div>
           <div className="flex items-center justify-center gap-3 pt-2">
             <motion.div
               whileHover={{ y: -4, scale: 1.1 }}
