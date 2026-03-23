@@ -59,6 +59,7 @@ export default function Contact() {
           initial={{ opacity: 0, y: 40, boxShadow: "0 0px 0px rgba(121,144,219,0)" }}
           animate={isInView ? { opacity: 1, y: 0, boxShadow: "0 0px 0px rgba(121,144,219,0)" } : { opacity: 0, y: 40, boxShadow: "0 0px 0px rgba(121,144,219,0)" }}
           transition={{ duration: 0.5, ease: "easeOut" }}
+          layout
           className="glass-card rounded-lg p-6 sm:p-10 space-y-6"
           whileHover={{ boxShadow: "0 24px 64px rgba(121,144,219,0.25)" }}
         >
@@ -75,7 +76,8 @@ export default function Contact() {
 
           {/* Email buttons + hover copy row — outer div owns the leave handler so the
               copy button stays visible when moving from a button down onto it */}
-          <div
+          <motion.div
+            layout
             className="flex flex-col items-center gap-3"
             onMouseLeave={() => setActiveEmail(null)}
           >
@@ -132,7 +134,7 @@ export default function Contact() {
                 </motion.button>
               )}
             </AnimatePresence>
-          </div>
+          </motion.div>
 
           <div className="flex items-center justify-center gap-3 pt-2">
             <motion.div
