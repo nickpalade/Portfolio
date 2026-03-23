@@ -27,7 +27,7 @@ export function SpotlightCard({ children, className }: SpotlightCardProps) {
     spotX.set(((e.clientX - rect.left) / rect.width) * 100);
     spotY.set(((e.clientY - rect.top) / rect.height) * 100);
     const isDark = document.documentElement.classList.contains("dark");
-    spotColor.set(isDark ? "rgba(121, 144, 219, 0.18)" : "rgba(110, 80, 220, 0.32)");
+    spotColor.set(isDark ? "rgba(121, 144, 219, 0.18)" : "rgba(110, 80, 220, 0.14)");
     spotOpacityRaw.set(1);
   };
 
