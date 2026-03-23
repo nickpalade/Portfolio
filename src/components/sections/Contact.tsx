@@ -59,7 +59,6 @@ export default function Contact() {
           initial={{ opacity: 0, y: 40, boxShadow: "0 0px 0px rgba(121,144,219,0)" }}
           animate={isInView ? { opacity: 1, y: 0, boxShadow: "0 0px 0px rgba(121,144,219,0)" } : { opacity: 0, y: 40, boxShadow: "0 0px 0px rgba(121,144,219,0)" }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          layout
           className="glass-card rounded-lg p-6 sm:p-10 space-y-6"
           whileHover={{ boxShadow: "0 24px 64px rgba(121,144,219,0.25)" }}
         >
