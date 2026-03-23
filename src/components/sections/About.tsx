@@ -117,7 +117,7 @@ export default function About() {
                   <div className="relative">
                     <div className="absolute inset-0 rounded-full bg-primary/20 blur-3xl" />
                     <img
-                      src="/img/me.jpg"
+                      src={`${import.meta.env.BASE_URL}img/me.jpg`}
                       alt="Nick"
                       loading="lazy"
                       className="relative w-48 h-48 rounded-full object-cover border-4 border-border shadow-2xl"

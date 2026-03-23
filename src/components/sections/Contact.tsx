@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { Mail, Github, Linkedin, FileText } from "lucide-react";
 import { motion, useInView } from "framer-motion";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 export default function Contact() {
@@ -114,9 +115,9 @@ export default function Contact() {
               transition={{ type: "spring", stiffness: 400, damping: 15 }}
             >
               <Button variant="outline" size="icon" asChild title="View CV">
-                <a href="/cv">
+                <Link to="/cv">
                   <FileText className="h-5 w-5" />
-                </a>
+                </Link>
               </Button>
             </motion.div>
           </div>

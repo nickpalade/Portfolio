@@ -8,7 +8,7 @@ const CV = lazy(() => import("./pages/CV"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const App = () => (
-  <BrowserRouter>
+  <BrowserRouter basename={import.meta.env.BASE_URL}>
     <Routes>
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />

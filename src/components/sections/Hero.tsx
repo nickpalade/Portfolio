@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { ArrowDown, Github, FileText } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
@@ -166,13 +167,10 @@ export default function Hero() {
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
           >
             <Button variant="outline" size="lg" asChild>
-              <a
-                href="/cv"
-                className="inline-flex items-center gap-2"
-              >
+              <Link to="/cv" className="inline-flex items-center gap-2">
                 <FileText className="h-4 w-4" />
                 View CV
-              </a>
+              </Link>
             </Button>
           </motion.div>
         </motion.div>

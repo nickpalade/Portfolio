@@ -1,4 +1,4 @@
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { MouseGradient } from "./MouseGradient";
 import { User, Briefcase, Mail, Home, Sun, Moon, Github, Linkedin, FileText } from "lucide-react";
@@ -68,7 +68,7 @@ function Navbar() {
             whileTap={{ scale: 0.9 }}
             transition={{ duration: 0.5 }}
           >
-            <img src="/img/me.jpg" alt="Nick" className="w-full h-full object-cover" />
+            <img src={`${import.meta.env.BASE_URL}img/me.jpg`} alt="Nick" className="w-full h-full object-cover" />
           </motion.div>
           <span className="font-bold text-lg hidden sm:inline-block">Nick</span>
         </div>
@@ -123,9 +123,9 @@ function Navbar() {
               </motion.div>
               <motion.div whileHover={{ y: -2, scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                 <Button variant="ghost" size="icon" asChild className="h-9 w-9 text-muted-foreground hover:text-primary" title="View CV">
-                  <a href="/cv">
+                  <Link to="/cv">
                     <FileText className="h-5 w-5" />
-                  </a>
+                  </Link>
                 </Button>
               </motion.div>
             </>
