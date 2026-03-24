@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import React, { useRef } from "react";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { Code2, Gamepad2, Palette } from "lucide-react";
 import { SpotlightCard } from "@/components/ui/SpotlightCard";
@@ -24,15 +24,31 @@ const skills = [
 
 const techStack = [
   "TypeScript",
-  "React",
   "Python",
+  "Java",
+  "React",
   "FastAPI",
+  "Flask",
+  "PyTorch",
+  "OpenCV",
+  "YOLO",
   "Node.js",
   "Tailwind CSS",
-  "SQLite",
-  "OpenCV",
+  "SQL",
+  "PHP",
+  "Lua",
   "Git",
 ];
+
+const handleEduClick = (e: React.MouseEvent) => {
+  if (window.getSelection()?.toString()) return;
+  if ((e.target as HTMLElement).closest("a, button")) return;
+  window.open(
+    "https://www.universiteitleiden.nl/en/education/study-programmes/bachelor/data-science-and-artificial-intelligence",
+    "_blank",
+    "noopener,noreferrer"
+  );
+};
 
 export default function About() {
   const isMobile = useIsMobile();
@@ -59,7 +75,7 @@ export default function About() {
   const techInView = useInView(techRef, { once: true, margin: "-100px" });
 
   return (
-    <section id="about" ref={sectionRef} className="min-h-screen flex flex-col justify-center md:px-4 py-24">
+    <section id="about" ref={sectionRef} className="flex flex-col justify-center md:px-4 py-16">
       <div className="container mx-auto max-w-5xl space-y-12">
         <div className="grid gap-12 md:grid-cols-2 items-center">
           <motion.div
@@ -81,16 +97,16 @@ export default function About() {
               whileHover={isMobile ? undefined : { x: 4 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
             >
-              I'm a programmer with experience in web development, creative design, and game development.
-              I enjoy learning new technologies and applying them to real-world problems.
+              I'm studying Data Science & AI at Leiden University and building things on the side.
+              I want to be part of a team where I ship something real and find out where it breaks.
             </motion.p>
             <motion.p
               className="text-muted-foreground leading-relaxed"
               whileHover={isMobile ? undefined : { x: 4 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
             >
-              Whether I'm architecting a social platform, scripting game logic, or crafting a polished UI,
-              I bring the same focus: build something that actually works and looks good doing it.
+              I'm drawn to companies that build their own internal software at scale, problems specific enough
+              that generic solutions don't work. I do my best work when I own a full problem, not just a small task.
             </motion.p>
           </motion.div>
 
@@ -189,6 +205,47 @@ export default function About() {
               </motion.span>
             ))}
           </div>
+        </motion.div>
+
+        <motion.div
+          className="space-y-4"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+          <h3 className="text-xl font-semibold tracking-tight">Education</h3>
+          <motion.div
+            className="rounded-lg overflow-hidden cursor-pointer"
+            style={{ boxShadow: "0 0px 0px rgba(121,144,219,0)" }}
+            whileHover={isMobile ? undefined : { boxShadow: "0 24px 64px rgba(121,144,219,0.25)" }}
+            whileTap={{ scale: 0.995 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            onClick={handleEduClick}
+          >
+            <SpotlightCard className="glass-card rounded-lg flex flex-col sm:flex-row">
+              {/* Logo panel — flush edges, full height; outer corners clipped by parent overflow-hidden */}
+              <div className="h-24 sm:h-auto sm:w-40 bg-white flex-shrink-0 flex items-center justify-center p-5">
+                <img
+                  src={`${import.meta.env.BASE_URL}img/Universiteit-Leiden-logo.png`}
+                  alt="Leiden University"
+                  className="h-full w-full object-contain"
+                  draggable={false}
+                />
+              </div>
+              {/* Content */}
+              <div className="flex-1 p-6 space-y-1.5">
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
+                  <span className="font-semibold text-base">B.Sc. Data Science &amp; Artificial Intelligence</span>
+                  <span className="text-sm text-muted-foreground">Leiden University</span>
+                  <span className="text-xs font-mono text-primary/70 ml-auto">Expected 2027</span>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Machine Learning · Neural Computing · Reinforcement Learning · Algorithms &amp; Data Structures · Databases · Software Development · Security · Symbolic AI · Research Methods in AI · Statistics
+                </p>
+              </div>
+            </SpotlightCard>
+          </motion.div>
         </motion.div>
       </div>
     </section>

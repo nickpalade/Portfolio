@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { SpotlightCard } from "@/components/ui/SpotlightCard";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { Link, useNavigate } from "react-router-dom";
 
 interface Project {
   title: string;
@@ -11,6 +12,7 @@ interface Project {
   tags: string[];
   accent: string;
   link?: { label: string; href: string };
+  slug?: string;
 }
 
 const projects: Project[] = [
@@ -18,63 +20,69 @@ const projects: Project[] = [
     title: "HomeworkHacker",
     description:
       "An AI you can talk to while doing homework. Say \"hey buddy\" and it starts listening. The backend runs YOLOv5 on the camera. Hold your phone for ten seconds and the AI interrupts you, bypasses mute to do it. Two personality modes: patient tutor and sarcastic friend. Most of the complexity lives in 9 custom React hooks managing a four-state voice FSM, streaming Gemini responses, and screen capture.",
-    tags: ["React", "TypeScript", "Python", "FastAPI", "YOLOv5", "Gemini AI"],
+    tags: ["React", "TypeScript", "Python", "Full-Stack", "Comp Vision", "LLM API"],
     accent: "#6366f1",
     link: {
       label: "View on GitHub",
       href: "https://github.com/nickpalade/HomeworkHacker",
     },
+    slug: "homeworkhacker",
   },
   {
     title: "yupooscraper",
     description:
       "Yupoo sellers have no search, just hundreds of album thumbnails and no way to filter any of it. This crawls a seller's listing, runs each cover image through a color clustering pipeline in OpenCV, tags by brightness, aspect ratio, and brand name, and stores everything locally. The frontend has compound tag search, color similarity matching, and live scrape progress via SSE. Every filter serializes into the URL so searches are shareable.",
-    tags: ["React", "TypeScript", "Python", "FastAPI", "OpenCV", "SQLite"],
+    tags: ["React", "TypeScript", "Python", "Full-Stack", "Comp Vision", "SQL"],
     accent: "#10b981",
     link: {
       label: "View on GitHub",
       href: "https://github.com/nickpalade/yupooscraper",
     },
+    slug: "yupooscraper",
   },
   {
     title: "Paraphraser",
     description:
       "Select text, get five rephrasings back, with surrounding context included in the model call so the output actually fits the document. Runs against OpenRouter or a local Ollama instance; the hook that picks the provider keeps the UI from caring which one is active. There's also a code editing mode with CodeMirror and word-level synonym replacement on top of the full-sentence paraphrasing.",
-    tags: ["React", "TypeScript", "OpenRouter", "Ollama", "CodeMirror"],
+    tags: ["React", "TypeScript", "Frontend", "LLM API"],
     accent: "#8b5cf6",
     link: {
       label: "View on GitHub",
       href: "https://github.com/nickpalade/paraphraser",
     },
+    slug: "paraphraser",
   },
   {
     title: "HabitHunter",
     description:
       "A personal finance tracker built to make sense of spending without the bloat of a full budgeting app. Imports directly from Revolut CSV exports, auto-categorizes transactions using a merchant mapping system, and runs linear regression to predict next month's spending by category. Has multi-currency support, monthly budget targets, and 207 tests.",
-    tags: ["Python", "Flask", "SQLite", "pytest"],
+    tags: ["Python", "Flask", "SQL", "Full-Stack"],
     accent: "#f59e0b",
     link: {
       label: "View on GitHub",
       href: "https://github.com/nickpalade/HabitHunter",
     },
+    slug: "habithunter",
   },
   {
     title: "Social Media Website",
     description:
       "Started this because of my fascination with the downsides of social media and its tendency to create echo chambers and spread misinformation. I set out to build a platform that encouraged healthy discussions and diverse perspectives, developed solo in the summer before my A-levels. Contains core social features: posting, commenting, liking, and browsing.",
-    tags: ["PHP", "JavaScript", "CSS", "MySQL"],
+    tags: ["PHP", "JavaScript", "CSS", "SQL", "Full-Stack"],
     accent: "#f43f5e",
+    slug: "socialmedia",
   },
   {
     title: "Roblox Project",
     description:
       "A fully featured Roblox game with over 8,000 lines of Luau code, built entirely solo. Includes custom game mechanics, UI systems, and server-client architecture.",
-    tags: ["Luau", "Roblox Studio", "Game Dev"],
+    tags: ["Lua", "Game Dev"],
     accent: "#f97316",
     link: {
       label: "Play on Roblox",
       href: "https://www.roblox.com/games/13230751727/",
     },
+    slug: "roblox",
   },
 ];
 
@@ -117,10 +125,19 @@ function DecorativePanel({ index, accent, isMobile }: { index: number; accent: s
 
 function ProjectCard({ project, index, isMobile }: { project: Project; index: number; isMobile: boolean }) {
   const ref = useRef(null);
+  const navigate = useNavigate();
   const isInView = useInView(ref, { once: true, margin: "-60px" });
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   // Parallax zeroed on mobile — still creates subscription but avoids per-card rAF overhead
   const cardY = useTransform(scrollYProgress, [0, 1], isMobile ? [0, 0] : [30, -30]);
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't navigate if user was dragging to select text
+    if (window.getSelection()?.toString()) return;
+    // Let native link/button handlers do their thing
+    if ((e.target as HTMLElement).closest("a, button")) return;
+    if (project.slug) navigate(`/projects/${project.slug}`);
+  };
 
   return (
     <motion.div
@@ -129,9 +146,10 @@ function ProjectCard({ project, index, isMobile }: { project: Project; index: nu
       animate={{ opacity: isInView ? 1 : 0, y: isInView ? 0 : 40 }}
       transition={{ duration: 0.55, delay: index * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
       style={{ y: cardY }}
-      className="glass-card rounded-lg overflow-hidden transition-shadow hover:shadow-lg"
+      className="glass-card rounded-lg overflow-hidden transition-shadow hover:shadow-lg cursor-pointer"
       whileHover={isMobile ? undefined : { scale: 1.012, y: -4, boxShadow: "0 20px 48px rgba(0,0,0,0.25)" }}
       whileTap={{ scale: 0.995 }}
+      onClick={handleCardClick}
     >
       <SpotlightCard
         className={`rounded-lg flex flex-col md:flex-row gap-0 w-full overflow-hidden${
@@ -171,8 +189,8 @@ function ProjectCard({ project, index, isMobile }: { project: Project; index: nu
               </motion.span>
             ))}
           </div>
-          {project.link && (
-            <div className="pt-2">
+          <div className="pt-2 flex flex-wrap gap-2">
+            {project.link && (
               <motion.div
                 whileHover={isMobile ? undefined : { x: 4 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
@@ -191,8 +209,27 @@ function ProjectCard({ project, index, isMobile }: { project: Project; index: nu
                   </a>
                 </Button>
               </motion.div>
-            </div>
-          )}
+            )}
+            {project.slug && (
+              <motion.div
+                whileHover={isMobile ? undefined : { x: 4 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                style={{ display: "inline-block" }}
+              >
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  asChild
+                  style={{ color: project.accent }}
+                  className="hover:bg-muted/50"
+                >
+                  <Link to={`/projects/${project.slug}`}>
+                    View Details →
+                  </Link>
+                </Button>
+              </motion.div>
+            )}
+          </div>
         </div>
       </SpotlightCard>
     </motion.div>
