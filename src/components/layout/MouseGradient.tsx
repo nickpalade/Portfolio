@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { usePerformanceMode } from "@/context/PerformanceContext";
 
 type Blob = {
   baseX: number;
@@ -83,7 +84,9 @@ const BLOBS: Blob[] = [
 ];
 
 // Mobile renders fewer blobs to reduce GPU fill cost
-const MOBILE_BLOB_COUNT = 4;
+const MOBILE_BLOB_COUNT  = 4;
+// Low-performance mode: bare minimum blobs + lowest resolution
+const LOW_PERF_BLOB_COUNT = 2;
 
 const fmt = (n: number) => n.toFixed(3);
 const BLOB_COLORS = BLOBS.map(blob => ({
@@ -118,6 +121,7 @@ const MOB_5   = 200;  // deep idle
 export function MouseGradient() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
+  const { isLowPerf } = usePerformanceMode();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -127,12 +131,14 @@ export function MouseGradient() {
 
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const isMobile = window.matchMedia("(pointer: coarse)").matches;
-    const blobCount = isMobile ? MOBILE_BLOB_COUNT : BLOBS.length;
+    // Low-perf overrides mobile: even fewer blobs, lower resolution, no mouse.
+    const noMouse   = isMobile || isLowPerf;
+    const blobCount = isLowPerf ? LOW_PERF_BLOB_COUNT : (isMobile ? MOBILE_BLOB_COUNT : BLOBS.length);
 
-    // Mobile renders the pixel buffer at half resolution.
+    // Low-perf: 0.25 × resolution. Mobile: 0.5 ×. Desktop: 1 ×.
     // The canvas is displayed at full viewport size via CSS (fixed inset-0 w-full h-full),
-    // so CSS stretches the half-res buffer — invisible at 60px blur.
-    const PIXEL_RATIO = isMobile ? 0.5 : 1;
+    // so CSS stretches the buffer — invisible at 60px blur.
+    const PIXEL_RATIO = isLowPerf ? 0.25 : (isMobile ? 0.5 : 1);
 
     let w = window.innerWidth;
     let h = window.innerHeight;
@@ -165,7 +171,18 @@ export function MouseGradient() {
       rawMouseY = e.clientY / h;
       lastMouseTime = performance.now();
     };
-    if (!isMobile) window.addEventListener("mousemove", onMouseMove);
+    if (!noMouse) window.addEventListener("mousemove", onMouseMove);
+
+    // Touch tracking (mobile only, not low-perf) — boost to 60 fps while finger is on screen
+    let lastTouchTime = -Infinity;
+    let onTouchStart: (() => void) | null = null;
+    let onTouchEnd:   (() => void) | null = null;
+    if (isMobile && !isLowPerf) {
+      onTouchStart = () => { lastTouchTime = performance.now(); };
+      onTouchEnd   = () => { lastTouchTime = performance.now(); };
+      window.addEventListener("touchstart", onTouchStart, { passive: true });
+      window.addEventListener("touchend",   onTouchEnd,   { passive: true });
+    }
 
     // Scroll tracking
     let lagScrollY = window.scrollY;
@@ -186,10 +203,19 @@ export function MouseGradient() {
       const velMag = Math.abs(smoothScrollVel);
       const scrollIdleMs = now - lastScrollTime;
 
-      if (isMobile) {
+      if (isLowPerf) {
         if (velMag > 4)             return MOB_30;
         if (velMag > 0.5)           return MOB_10;
         if (scrollIdleMs < 2000)    return MOB_10;
+        return MOB_5;
+      }
+
+      if (isMobile) {
+        // Boost to 60 fps while a finger is touching the screen (scroll/swipe feel)
+        const touching = (now - lastTouchTime) < 300;
+        if (touching || velMag > 4)  return FPS_60;
+        if (velMag > 0.5)            return MOB_10;
+        if (scrollIdleMs < 2000)     return MOB_10;
         return MOB_5;
       }
 
@@ -216,7 +242,7 @@ export function MouseGradient() {
       const cw = canvas.width;
       const ch = canvas.height;
 
-      if (!isMobile) {
+      if (!noMouse) {
         smoothMouseX += (rawMouseX - smoothMouseX) * 0.06;
         smoothMouseY += (rawMouseY - smoothMouseY) * 0.06;
       }
@@ -237,8 +263,8 @@ export function MouseGradient() {
         const baseX = blob.baseX + blob.ampX * Math.sin(blob.freqX * time + blob.phaseX);
         const baseY = blob.baseY + blob.ampY * Math.cos(blob.freqY * time + blob.phaseY);
 
-        const mouseOffsetX = isMobile ? 0 : -(smoothMouseX - 0.5) * blob.mouseDepth * 2;
-        const mouseOffsetY = isMobile ? 0 : -(smoothMouseY - 0.5) * blob.mouseDepth * 2;
+        const mouseOffsetX = noMouse ? 0 : -(smoothMouseX - 0.5) * blob.mouseDepth * 2;
+        const mouseOffsetY = noMouse ? 0 : -(smoothMouseY - 0.5) * blob.mouseDepth * 2;
 
         const lagOffset = (lagScrollY - window.scrollY) * blob.scrollDepth * 0.18;
         const velOffset = -smoothScrollVel * blob.scrollDepth * 3.2;
@@ -281,12 +307,14 @@ export function MouseGradient() {
     return () => {
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener("resize", resize);
-      if (!isMobile) window.removeEventListener("mousemove", onMouseMove);
+      if (!noMouse) window.removeEventListener("mousemove", onMouseMove);
+      if (onTouchStart) window.removeEventListener("touchstart", onTouchStart);
+      if (onTouchEnd)   window.removeEventListener("touchend",   onTouchEnd);
       window.removeEventListener("scroll", onScroll);
       document.removeEventListener("visibilitychange", onVisibilityChange);
       themeObserver.disconnect();
     };
-  }, []);
+  }, [isLowPerf]);
 
   // Blur is applied to the wrapper div rather than the canvas element itself.
   // On Safari iOS, filter on a position:fixed canvas causes flickering during scroll.

@@ -107,6 +107,25 @@
     background-blend-mode: multiply, normal;
   }
 
+  /* ── Low-performance mode ──────────────────────────────────────────────────
+     The navbar <header> keeps its blur. Everything else loses it.
+     :not(header) won't match the header element itself, but will match its
+     children — those don't carry backdrop-filter so it's a no-op for them. */
+  .low-perf :not(header) {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .low-perf .glass-card {
+    background: rgb(var(--card)) !important;
+    background-blend-mode: normal !important;
+  }
+
+  :root:not(.dark).low-perf .glass-card {
+    background: rgb(var(--card)) !important;
+    background-blend-mode: normal !important;
+  }
+
   .glow-primary {
     box-shadow:
       0 0 12px 1px rgb(var(--primary)),

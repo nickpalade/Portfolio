@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { useMotionValue, useMotionTemplate, useSpring, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { usePerformanceMode } from "@/context/PerformanceContext";
 
 interface SpotlightCardProps {
   children: React.ReactNode;
@@ -10,6 +11,7 @@ interface SpotlightCardProps {
 
 export function SpotlightCard({ children, className }: SpotlightCardProps) {
   const isMobile = useIsMobile();
+  const { isLowPerf } = usePerformanceMode();
   const ref = useRef<HTMLDivElement>(null);
 
   // MotionValues are created unconditionally (hooks must not be conditional),
@@ -31,8 +33,8 @@ export function SpotlightCard({ children, className }: SpotlightCardProps) {
     spotOpacityRaw.set(1);
   };
 
-  // On mobile: plain div — no overlay, no event handlers, no motion.div in the tree
-  if (isMobile) {
+  // On mobile or low-perf: plain div — no overlay, no event handlers, no motion.div
+  if (isMobile || isLowPerf) {
     return <div className={cn("relative", className)}>{children}</div>;
   }
 

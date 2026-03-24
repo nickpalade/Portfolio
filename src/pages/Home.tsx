@@ -5,12 +5,14 @@ import About from "@/components/sections/About";
 import Projects from "@/components/sections/Projects";
 import Contact from "@/components/sections/Contact";
 import { smoothScrollTo, scrollLocked, registerGravitySyncer } from "@/lib/utils";
+import { usePerformanceMode } from "@/context/PerformanceContext";
 
 // Skip #intro (page top) — only inter-section boundaries matter
 const SECTION_IDS = ["about", "projects", "contact"];
 
-function useScrollGravity() {
+function useScrollGravity(enabled: boolean) {
   useEffect(() => {
+    if (!enabled) return;
     let targetY = window.scrollY;
     let rafId: number | null = null;
     let boundaries: number[] = [];
@@ -167,12 +169,13 @@ function useScrollGravity() {
       window.removeEventListener("touchmove", onTouchMove);
       if (rafId) cancelAnimationFrame(rafId);
     };
-  }, []);
+  }, [enabled]);
 }
 
 export default function Home() {
   const location = useLocation();
-  useScrollGravity();
+  const { isLowPerf } = usePerformanceMode();
+  useScrollGravity(!isLowPerf);
 
   useEffect(() => {
     if (location.hash) {

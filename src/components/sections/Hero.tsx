@@ -4,6 +4,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { usePerformanceMode } from "@/context/PerformanceContext";
 import { smoothScrollTo } from "@/lib/utils";
 
 const ROLES = ["developer", "designer", "builder"];
@@ -28,18 +29,20 @@ const itemVariants = {
 
 export default function Hero() {
   const isMobile = useIsMobile();
+  const { isLowPerf } = usePerformanceMode();
+  const noEffects = isMobile || isLowPerf;
   const [roleIndex, setRoleIndex] = useState(0);
   const sectionRef = useRef<HTMLElement>(null);
 
   const { scrollY } = useScroll();
 
-  // Parallax layers — zeroed out on mobile (no parallax, better perf)
-  const badgeY    = useTransform(scrollY, [0, 700], isMobile ? [0, 0]  : [0, -50]);
-  const headingY  = useTransform(scrollY, [0, 700], isMobile ? [0, 0]  : [0, -90]);
-  const subtitleY = useTransform(scrollY, [0, 700], isMobile ? [0, 0]  : [0, -70]);
-  const buttonsY  = useTransform(scrollY, [0, 700], isMobile ? [0, 0]  : [0, -50]);
-  const heroOpacity  = useTransform(scrollY, [0, 500], isMobile ? [1, 1] : [1, 0]);
-  const arrowOpacity = useTransform(scrollY, [0, 200], isMobile ? [1, 1] : [1, 0]);
+  // Parallax layers — zeroed out on mobile/low-perf (no parallax, better perf)
+  const badgeY    = useTransform(scrollY, [0, 700], noEffects ? [0, 0]  : [0, -50]);
+  const headingY  = useTransform(scrollY, [0, 700], noEffects ? [0, 0]  : [0, -90]);
+  const subtitleY = useTransform(scrollY, [0, 700], noEffects ? [0, 0]  : [0, -70]);
+  const buttonsY  = useTransform(scrollY, [0, 700], noEffects ? [0, 0]  : [0, -50]);
+  const heroOpacity  = useTransform(scrollY, [0, 500], noEffects ? [1, 1] : [1, 0]);
+  const arrowOpacity = useTransform(scrollY, [0, 200], noEffects ? [1, 1] : [1, 0]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -68,7 +71,7 @@ export default function Hero() {
         <motion.div
           variants={itemVariants}
           style={{ y: badgeY }}
-          whileHover={isMobile ? undefined : { scale: 1.05, boxShadow: "0 0 20px rgba(121,144,219,0.4)" }}
+          whileHover={noEffects ? undefined :{ scale: 1.05, boxShadow: "0 0 20px rgba(121,144,219,0.4)" }}
           whileTap={{ scale: 0.97 }}
           className="inline-flex items-center gap-2 rounded-full border border-border bg-card/50 px-4 py-1.5 text-sm text-muted-foreground backdrop-blur-sm cursor-pointer"
         >
@@ -123,7 +126,7 @@ export default function Hero() {
           className="flex flex-wrap items-center justify-center gap-4 pt-2"
         >
           <motion.div
-            whileHover={isMobile ? undefined : { scale: 1.04 }}
+            whileHover={noEffects ? undefined :{ scale: 1.04 }}
             whileTap={{ scale: 0.96 }}
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
           >
@@ -132,7 +135,7 @@ export default function Hero() {
             </Button>
           </motion.div>
           <motion.div
-            whileHover={isMobile ? undefined : { scale: 1.04 }}
+            whileHover={noEffects ? undefined :{ scale: 1.04 }}
             whileTap={{ scale: 0.96 }}
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
           >
@@ -145,7 +148,7 @@ export default function Hero() {
             </Button>
           </motion.div>
           <motion.div
-            whileHover={isMobile ? undefined : { scale: 1.04, y: -2 }}
+            whileHover={noEffects ? undefined :{ scale: 1.04, y: -2 }}
             whileTap={{ scale: 0.96 }}
           >
             <Button variant="outline" size="lg" asChild>
@@ -161,7 +164,7 @@ export default function Hero() {
             </Button>
           </motion.div>
           <motion.div
-            whileHover={isMobile ? undefined : { scale: 1.04, y: -2 }}
+            whileHover={noEffects ? undefined :{ scale: 1.04, y: -2 }}
             whileTap={{ scale: 0.96 }}
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
           >
@@ -179,7 +182,7 @@ export default function Hero() {
           className="flex justify-center w-full text-muted-foreground hover:text-primary transition-colors animate-bounce"
           aria-label="Scroll down"
           style={{ opacity: arrowOpacity, marginTop: "clamp(20px, calc((100vh - 3.5rem - 420px) * 0.35), 5rem)" }}
-          whileHover={isMobile ? undefined : { scale: 1.3, y: 4 }}
+          whileHover={noEffects ? undefined :{ scale: 1.3, y: 4 }}
           transition={{ type: "spring", stiffness: 300 }}
         >
           <ArrowDown className="h-6 w-6" />
