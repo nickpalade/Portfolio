@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Mail, Github, Linkedin, FileText, Copy, Check } from "lucide-react";
-import { motion, useInView, AnimatePresence } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
@@ -110,28 +110,24 @@ export default function Contact() {
               </motion.div>
             </div>
 
-            {/* Copy button — appears on hover, stays visible when mouse moves onto it */}
-            <AnimatePresence>
-              {activeEmail && (
-                <motion.button
-                  key="copy-btn"
-                  initial={{ opacity: 0, y: -6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.15, ease: "easeOut" }}
-                  onClick={handleCopy}
-                  className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors"
-                >
-                  {copied
-                    ? <Check className="h-3.5 w-3.5 text-green-500" />
-                    : <Copy className="h-3.5 w-3.5" />
-                  }
-                  <span className={copied ? "text-green-500" : ""}>
-                    {copied ? "Copied!" : EMAILS[activeEmail]}
-                  </span>
-                </motion.button>
-              )}
-            </AnimatePresence>
+            {/* Copy button — always in DOM to avoid layout shift; hidden when no email is active */}
+            <button
+              onClick={handleCopy}
+              disabled={!activeEmail}
+              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-[opacity,color] duration-150"
+              style={{
+                opacity: activeEmail ? 1 : 0,
+                pointerEvents: activeEmail ? "auto" : "none",
+              }}
+            >
+              {copied
+                ? <Check className="h-3.5 w-3.5 text-green-500" />
+                : <Copy className="h-3.5 w-3.5" />
+              }
+              <span className={copied ? "text-green-500" : ""}>
+                {copied ? "Copied!" : activeEmail ? EMAILS[activeEmail] : "\u00a0"}
+              </span>
+            </button>
           </div>
 
           <div className="flex items-center justify-center gap-3 pt-2">

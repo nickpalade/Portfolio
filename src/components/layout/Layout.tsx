@@ -2,7 +2,7 @@ import { Outlet, useLocation, useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { MouseGradient } from "./MouseGradient";
 import { User, Briefcase, Mail, Home, Sun, Moon, Github, Linkedin, FileText } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, smoothScrollTo } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/hooks/useTheme";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -48,30 +48,11 @@ function Navbar() {
     };
   }, []);
 
-  const smoothScrollTo = (target: Element) => {
-    const startY = window.scrollY;
-    const endY = (target as HTMLElement).getBoundingClientRect().top + startY;
-    const duration = 900;
-    const startTime = performance.now();
-
-    const easeInOut = (t: number) =>
-      t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-
-    const step = (now: number) => {
-      const elapsed = now - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      window.scrollTo(0, startY + (endY - startY) * easeInOut(progress));
-      if (progress < 1) requestAnimationFrame(step);
-    };
-
-    requestAnimationFrame(step);
-  };
-
   const handleNav = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
     if (location.pathname === "/") {
-      const target = document.querySelector(href);
-      if (target) smoothScrollTo(target);
+      // #intro = page top (scrollY 0); other sections scroll to their element
+      smoothScrollTo(href === "#intro" ? 0 : href, 900);
     } else {
       navigate("/" + href);
     }
@@ -168,24 +149,6 @@ function Navbar() {
       </div>
     </header>
   );
-}
-
-function smoothScrollToSelector(selector: string) {
-  const target = document.querySelector(selector);
-  if (!target) return;
-  const startY = window.scrollY;
-  const endY = (target as HTMLElement).getBoundingClientRect().top + startY;
-  const duration = 900;
-  const startTime = performance.now();
-  const easeInOut = (t: number) =>
-    t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-  const step = (now: number) => {
-    const elapsed = now - startTime;
-    const progress = Math.min(elapsed / duration, 1);
-    window.scrollTo(0, startY + (endY - startY) * easeInOut(progress));
-    if (progress < 1) requestAnimationFrame(step);
-  };
-  requestAnimationFrame(step);
 }
 
 function Footer() {

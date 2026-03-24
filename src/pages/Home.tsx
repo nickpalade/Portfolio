@@ -4,22 +4,7 @@ import Hero from "@/components/sections/Hero";
 import About from "@/components/sections/About";
 import Projects from "@/components/sections/Projects";
 import Contact from "@/components/sections/Contact";
-
-function smoothScrollTo(target: Element) {
-  const startY = window.scrollY;
-  const endY = (target as HTMLElement).getBoundingClientRect().top + startY;
-  const duration = 500;
-  const startTime = performance.now();
-  const easeInOut = (t: number) =>
-    t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-  const step = (now: number) => {
-    const elapsed = now - startTime;
-    const progress = Math.min(elapsed / duration, 1);
-    window.scrollTo(0, startY + (endY - startY) * easeInOut(progress));
-    if (progress < 1) requestAnimationFrame(step);
-  };
-  requestAnimationFrame(step);
-}
+import { smoothScrollTo, scrollLocked, registerGravitySyncer } from "@/lib/utils";
 
 // Skip #intro (page top) — only inter-section boundaries matter
 const SECTION_IDS = ["about", "projects", "contact"];
@@ -29,6 +14,9 @@ function useScrollGravity() {
     let targetY = window.scrollY;
     let rafId: number | null = null;
     let boundaries: number[] = [];
+
+    // Keep gravity's targetY in sync when smoothScrollTo lands
+    registerGravitySyncer((y) => { targetY = y; });
 
     let navbarHeight = 0;
 
@@ -116,6 +104,11 @@ function useScrollGravity() {
     }
 
     function scrollFrame() {
+      // Yield to programmatic navigation scrolls
+      if (scrollLocked) {
+        rafId = null;
+        return;
+      }
       const current = window.scrollY;
       const diff = targetY - current;
       if (Math.abs(diff) < 0.5) {
@@ -130,6 +123,8 @@ function useScrollGravity() {
     function onWheel(e: WheelEvent) {
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
       e.preventDefault();
+      // Don't compete with a programmatic navigation scroll
+      if (scrollLocked) return;
 
       let delta = e.deltaY;
       if (e.deltaMode === 1) delta *= 40;
@@ -184,7 +179,7 @@ export default function Home() {
       // Small delay lets the page render before scrolling
       const id = setTimeout(() => {
         const el = document.querySelector(location.hash);
-        if (el) smoothScrollTo(el);
+        if (el) smoothScrollTo(el, 700);
       }, 80);
       return () => clearTimeout(id);
     }

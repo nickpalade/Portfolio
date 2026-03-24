@@ -4,24 +4,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/useIsMobile";
-
-function smoothScrollTo(selector: string) {
-  const target = document.querySelector(selector);
-  if (!target) return;
-  const startY = window.scrollY;
-  const endY = (target as HTMLElement).getBoundingClientRect().top + startY;
-  const duration = 500;
-  const startTime = performance.now();
-  const easeInOut = (t: number) =>
-    t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-  const step = (now: number) => {
-    const elapsed = now - startTime;
-    const progress = Math.min(elapsed / duration, 1);
-    window.scrollTo(0, startY + (endY - startY) * easeInOut(progress));
-    if (progress < 1) requestAnimationFrame(step);
-  };
-  requestAnimationFrame(step);
-}
+import { smoothScrollTo } from "@/lib/utils";
 
 const ROLES = ["developer", "designer", "builder"];
 
@@ -73,7 +56,7 @@ export default function Hero() {
     <section
       id="intro"
       ref={sectionRef}
-      className="min-h-screen flex flex-col items-center justify-center text-center px-4 relative overflow-hidden"
+      className="min-h-[calc(100vh-3.5rem)] flex flex-col items-center justify-center text-center px-4 relative overflow-hidden"
     >
       <motion.div
         className="space-y-6 max-w-2xl"
@@ -190,18 +173,18 @@ export default function Hero() {
             </Button>
           </motion.div>
         </motion.div>
-      </motion.div>
 
-      <motion.button
-        onClick={scrollToProjects}
-        className="absolute bottom-10 text-muted-foreground hover:text-primary transition-colors animate-bounce"
-        aria-label="Scroll down"
-        style={{ opacity: arrowOpacity }}
-        whileHover={isMobile ? undefined : { scale: 1.3, y: 4 }}
-        transition={{ type: "spring", stiffness: 300 }}
-      >
-        <ArrowDown className="h-6 w-6" />
-      </motion.button>
+        <motion.button
+          onClick={scrollToProjects}
+          className="flex justify-center w-full text-muted-foreground hover:text-primary transition-colors animate-bounce"
+          aria-label="Scroll down"
+          style={{ opacity: arrowOpacity, marginTop: "clamp(20px, calc((100vh - 3.5rem - 420px) * 0.35), 5rem)" }}
+          whileHover={isMobile ? undefined : { scale: 1.3, y: 4 }}
+          transition={{ type: "spring", stiffness: 300 }}
+        >
+          <ArrowDown className="h-6 w-6" />
+        </motion.button>
+      </motion.div>
     </section>
   );
 }
