@@ -224,14 +224,19 @@ export default function About() {
             onClick={handleEduClick}
           >
             <SpotlightCard className="glass-card rounded-lg flex flex-col sm:flex-row">
-              {/* Logo panel — flush edges, full height; outer corners clipped by parent overflow-hidden */}
-              <div className="h-24 sm:h-auto sm:w-40 bg-white flex-shrink-0 flex items-center justify-center p-5">
-                <img
-                  src={`${import.meta.env.BASE_URL}img/Universiteit-Leiden-logo.png`}
-                  alt="Leiden University"
-                  className="h-full w-full object-contain"
-                  draggable={false}
-                />
+              {/* Logo panel — circular pfp style */}
+              <div className="flex-shrink-0 flex items-center justify-center p-5 sm:p-6 sm:pl-6 sm:pr-2">
+                <div className="relative w-16 h-16 sm:w-20 sm:h-20">
+                  <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl" />
+                  <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white flex items-center justify-center border-2 border-border shadow-lg overflow-hidden p-2.5">
+                    <img
+                      src={`${import.meta.env.BASE_URL}img/Universiteit-Leiden-logo.png`}
+                      alt="Leiden University"
+                      className="w-full h-full object-contain"
+                      draggable={false}
+                    />
+                  </div>
+                </div>
               </div>
               {/* Content */}
               <div className="flex-1 p-6 space-y-1.5">

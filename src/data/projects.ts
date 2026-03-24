@@ -42,78 +42,78 @@ export const projects: ProjectData[] = [
     tagline:
       "An AI study companion that listens for a wake word, reads your screen when asked, and interrupts you when your phone has been in your hand for too long.",
     overview:
-      "HomeworkHacker runs a four-state voice machine (idle, listening, processing, speaking) on the frontend and a phone-detection server on the backend. Say 'hey buddy' and it starts listening through the browser's speech API. Hold your phone in front of the webcam for ten seconds and the AI interrupts you, bypassing browser mute to do it. Most of the complexity lives in nine custom React hooks that coordinate wake word detection, streaming Gemini responses, screen capture, and a queued text-to-speech pipeline.",
+      "HomeworkHacker is a voice-controlled AI tutor built on a React + TypeScript frontend and a Python FastAPI backend. Say 'hey buddy' and it starts listening. Ask a question and it answers out loud, with streamed responses appearing on screen word by word as they generate. Grant screen access once and the AI can look at what you are working on when you ask it to. A separate backend runs a YOLOv5 object detection model against your webcam continuously: if your phone appears for ten consecutive seconds, the AI interrupts whatever it is doing to tell you to put it down, even if the browser tab is muted.",
     accent: "#6366f1",
     tags: ["React", "TypeScript", "Python", "Full-Stack", "Comp Vision", "LLM API"],
     links: [{ label: "View on GitHub", href: "https://github.com/nickpalade/HomeworkHacker" }],
     features: [
       {
         icon: "Cpu",
-        title: "Four-State Voice Machine",
+        title: "Wake Word Voice Loop",
         description:
-          "The app cycles through four states: IDLE, LISTENING, PROCESSING, SPEAKING. All transitions are tracked in refs rather than React state, so async voice callbacks always read the current state instead of a stale snapshot captured when the callback was created. Saying the wake word during SPEAKING jumps straight back to LISTENING.",
+          "The app moves through four modes: waiting, listening, thinking, and speaking. Say the wake word at any point, even while the AI is mid-response, and it stops and starts listening immediately.",
       },
       {
         icon: "Camera",
         title: "YOLOv5 Phone Detection",
         description:
-          "Webcam frames are sent to a FastAPI backend every four seconds. YOLOv5 checks for a cell phone (class ID 67 in the COCO dataset, which is the standard 80-category object detection benchmark the model was trained on). A timer on the frontend fires the interruption after ten seconds of continuous detection.",
+          "Webcam frames are checked by an AI object detection model every four seconds. When it spots a phone, a timer starts. Hold your phone in frame for ten consecutive seconds and the AI interrupts your session with a distraction warning.",
       },
       {
         icon: "Zap",
-        title: "Gemini 2.5 Flash Streaming",
+        title: "Streaming AI Responses",
         description:
-          "generateContentStream runs at temperature 1. Response chunks arrive and are fed sentence-by-sentence into the text-to-speech queue, so speech starts playing before the full reply is ready. Screen captures are attached as inline base64 image data in the content sent to the model.",
+          "The AI starts speaking before it has finished generating its reply. Words appear on screen and play out loud as they arrive, so you hear the start of the answer almost immediately. Screenshots attach automatically when the AI needs to see your screen.",
       },
       {
         icon: "Brain",
         title: "Two Personality Modes",
         description:
-          "Patient tutor and sarcastic friend. The active personality is injected as the first message in every Gemini call, so the model just sees a different persona rather than a mode flag. The sarcastic mode adds extra commentary when it catches you on your phone.",
+          "Switch between a patient tutor and a sarcastic friend. The active personality shapes every response the AI gives. In sarcastic mode, getting caught on your phone earns an extra comment on top of the interruption.",
       },
       {
         icon: "Volume2",
-        title: "Mute Bypass",
+        title: "Audio Even When Muted",
         description:
-          "An AudioContext is created and resumed on the first user interaction, which unlocks audio for the tab regardless of whether the browser tab is muted. SpeechSynthesis then plays back AI responses even in muted tabs.",
+          "The app can play audio even if the browser tab is muted. Silencing the tab does not stop the phone-detection alert from going off.",
       },
       {
         icon: "Monitor",
         title: "Auto Screen Capture",
         description:
-          "getDisplayMedia attaches a screen-sharing stream to a hidden video element. Frame capture triggers automatically when streamed Gemini text contains keywords like 'show me', so the AI can see your screen without you pressing anything.",
+          "Screen sharing starts in the background after a one-time permission prompt. When the AI detects a phrase like 'show me' in its own response, it automatically captures your screen and includes it in the next message without any button press.",
       },
     ],
     howItWorks: [
       {
         step: "Click Start",
         detail:
-          "AudioContext is unlocked, all hooks initialize, the voice machine enters IDLE, and wake word detection begins.",
+          "The app initialises, audio is enabled, and wake word detection begins. The AI is now waiting for you to speak.",
       },
       {
         step: "Say hey buddy",
         detail:
-          "Web Speech API matches on partial results as you speak, which fires about a second faster than waiting for the final transcription.",
+          "Voice recognition responds before you finish speaking, so the app reacts within about a second of hearing the wake word.",
       },
       {
         step: "Ask your question",
         detail:
-          "The full utterance is captured. A pause triggers the voice machine to move to PROCESSING and the Gemini call fires.",
+          "Speak your question. When you pause, the app recognises you are done and sends your question to the AI.",
       },
       {
-        step: "Response streams",
+        step: "Response streams in",
         detail:
-          "Chunks accumulate in a ref and flush to state for live rendering. Sentence boundaries push to the text-to-speech queue.",
+          "The AI's reply appears on screen word by word as it is generated. Speech plays out loud at the same pace, sentence by sentence.",
       },
       {
         step: "AI speaks",
         detail:
-          "The queue plays clips one after another. After each clip ends, wake word detection is suppressed for 300ms so the AI's own voice does not trigger itself.",
+          "Each sentence plays in sequence. A short pause after each clip stops the AI from hearing its own voice as a wake word and triggering itself.",
       },
       {
         step: "Phone alert",
         detail:
-          "If the webcam catches your phone for ten consecutive seconds during any state, the AI interrupts whatever it is doing and tells you to put it down.",
+          "If the webcam spots your phone for ten consecutive seconds at any point, the AI interrupts whatever it is doing and tells you to put it down.",
       },
     ],
     techStack: [
@@ -126,24 +126,24 @@ export const projects: ProjectData[] = [
     ],
     highlights: [
       {
-        title: "Ref-based voice state",
+        title: "Reliable voice state",
         description:
-          "All voice machine transitions use useRef, not useState. Async voice callbacks always read the current state without capturing a stale value from when the callback was first created.",
+          "The voice loop runs through four async states, and every speech recognition callback reads the current mode from a ref rather than closing over a stale value from setup time. This prevents race conditions where the app believes it is still speaking while it has already transitioned to listening.",
       },
       {
-        title: "Echo guard (300ms)",
+        title: "Echo guard",
         description:
-          "A short suppression window after each text-to-speech clip prevents the AI's own voice from being picked up as a wake word.",
+          "A deliberate pause is inserted after each spoken audio clip, giving the speech recognition engine time to flush before it resumes listening. Without it, the tail end of the AI's own voice triggers the wake word detector and starts a new response.",
       },
       {
         title: "Auto-trigger screen share",
         description:
-          "Keyword matching runs on each streamed response chunk. Matching strings automatically call getDisplayMedia without any button press from the user.",
+          "The AI monitors its own streamed output in real time, scanning each incoming chunk for phrases that signal it needs visual context. When one is detected, screen capture fires automatically mid-response, without any button press or user prompt.",
       },
       {
-        title: "Sentence-gated TTS queue",
+        title: "Speech starts mid-generation",
         description:
-          "Gemini chunks arrive mid-sentence. Text accumulates in a ref and flushes to the speech queue only at sentence boundaries. Speech starts before the full reply is ready, but pronunciation stays correct: a word cut off mid-chunk waits for the rest of the sentence before the clip is queued.",
+          "Rather than waiting for the full reply to finish generating before handing it to the speech synthesiser, sentences are queued for playback the moment they complete. The first sentence goes to the TTS queue while the rest of the response is still streaming, so the spoken answer begins almost immediately. Partial sentences wait for a sentence boundary before being queued, keeping pronunciation natural.",
       },
     ],
   },
@@ -154,7 +154,7 @@ export const projects: ProjectData[] = [
     tagline:
       "Yupoo has no search. This adds one, with color clustering, brand detection, and filters that save to a shareable URL.",
     overview:
-      "Yupoo is a Chinese image hosting platform used by wholesale clothing sellers. Their storefronts are hundreds of unlabeled album thumbnails with no way to find anything. yupooscraper crawls a seller's entire listing, runs each cover image through an OpenCV color-clustering pipeline to extract dominant colors, detects brand names using patterns that account for the star-emoji obfuscation sellers use to evade automated takedowns, and stores everything locally for fast compound-filter search.",
+      "Yupoo is a Chinese image hosting platform used by wholesale clothing sellers. Their storefronts are hundreds of unlabeled album thumbnails with no search, no filters, and no way to find anything. yupooscraper crawls a seller's entire catalog using a concurrent pipeline of async workers, runs each cover image through a k-means color clustering algorithm with OpenCV to extract dominant colors, and detects brand names including the obfuscated variants sellers use to evade automated takedowns. Everything is stored locally in SQLite so you can search and filter the entire storefront instantly.",
     accent: "#10b981",
     tags: ["React", "TypeScript", "Python", "Full-Stack", "Comp Vision", "SQL"],
     links: [{ label: "View on GitHub", href: "https://github.com/nickpalade/yupooscraper" }],
@@ -163,63 +163,63 @@ export const projects: ProjectData[] = [
         icon: "Server",
         title: "Two-Phase Crawl Pipeline",
         description:
-          "Phase one hits album index pages with twenty concurrent workers to count the full catalog. Phase two fetches album detail pages with five workers. Both phases are Python generators. FastAPI iterates them inside a StreamingResponse (which sends data to the browser as it is produced rather than waiting for everything to finish), and each progress event goes out over SSE (server-sent events, a simple one-way push channel from server to browser).",
+          "Phase one sends twenty concurrent workers to discover every album in the catalog. Phase two processes each album with five workers. Results start appearing in the browser before the crawl is finished, so you are never waiting on a blank screen.",
       },
       {
         icon: "Palette",
         title: "k-Means Color Clustering",
         description:
-          "Cover images are downsampled to 64x64 pixels, smoothed with a bilateral filter and Gaussian blur to reduce noise, then fed to k-means clustering with k=8 and KMEANS_PP_CENTERS initialization (a smarter starting point that spreads initial cluster centers apart). Each cluster center maps to a color name via 40+ ordered BGR (the pixel format OpenCV uses internally, equivalent to RGB in reverse order) range checks.",
+          "Cover images are downsampled and preprocessed to reduce background noise, then run through k-means color clustering to find the eight most prominent colors. Each color cluster maps to a plain color name via 40+ range checks, giving every album a searchable color profile.",
       },
       {
         icon: "Tag",
         title: "Brand Name Detection",
         description:
-          "Sellers obfuscate brand names to avoid takedowns: 'N★ke', 'A★idas'. The translate.json patterns match these exact variants. Longest-match-first scanning prevents a short pattern from matching inside a longer brand name.",
+          "Sellers write brand names like 'N★ke' and 'A★idas' to avoid automated takedowns. The detection patterns match these exact obfuscated variants. Longest-match-first scanning ensures a short brand name never incorrectly matches inside a longer one.",
       },
       {
         icon: "Activity",
         title: "Live Progress Feed",
         description:
-          "Twelve event types stream from the backend: scan_start, album_found, cv_complete, brand_found, stored, done, and more. The browser's native EventSource only supports GET requests, so a fetch with ReadableStream handles the POST instead, putting the seller URL in the request body.",
+          "Twelve distinct event types stream from the backend as crawling progresses: album found, color analysis complete, brand detected, saved, and more. A progress bar and live log update in real time, working around a browser limitation to support the POST request the crawl requires.",
       },
       {
         icon: "Search",
         title: "Compound Tag Search",
         description:
-          "Filters group by category prefix. Within a category the logic is OR; across categories it is AND. Color matching uses L1 distance (the sum of absolute differences between color percentages) on stored color profiles, filtered to the same clothing type first.",
+          "Filters are grouped by category. Selecting multiple options within the same category broadens results; combining different categories narrows them. Color filtering uses a color similarity score against stored profiles, ranked within the same clothing type first.",
       },
       {
         icon: "Link",
         title: "Shareable URL State",
         description:
-          "Eight filter params serialize to URL query params on every change using history.replaceState rather than pushState, so refining a search does not add entries to the browser's back stack. Pasting the URL into a new tab restores the exact search state.",
+          "Every active filter is saved into the URL as you search, so refining results does not add extra entries to your browser history. Paste the URL into a new tab and the exact search state comes back.",
       },
     ],
     howItWorks: [
       {
         step: "Enter seller URL",
-        detail: "POST /api/scrape triggers both crawl phases. Progress events start streaming immediately.",
+        detail: "Scraping begins immediately. Both crawl phases start and progress events stream to the browser straight away.",
       },
       {
         step: "Phase 1: discovery",
         detail:
-          "Twenty workers hit album index pages and collect all album URLs. The progress bar fills as albums are found.",
+          "Twenty workers scan the seller's album index pages and collect every album URL. The progress bar fills as albums are found.",
       },
       {
         step: "Phase 2: processing",
         detail:
-          "Five workers fetch each album page. Cover image is downloaded, resized to 64x64, run through k-means color extraction, tagged with brand and clothing type, and stored in SQLite.",
+          "Five workers fetch each album page. The cover image is downloaded, run through color clustering, tagged with brand and clothing type, and stored in SQLite.",
       },
       {
         step: "Gallery loads",
         detail:
-          "Frontend transitions from the progress view to the searchable gallery. All metadata is immediately available for filtering.",
+          "Once scraping finishes, the gallery replaces the progress view. Everything is filterable straight away.",
       },
       {
         step: "Search and share",
         detail:
-          "Compound tags filter the grid. Color similarity sorts by L1 distance against stored profiles. Any filter state is a shareable URL.",
+          "Compound tags filter the grid. Color similarity ranks results by how closely their color profile matches what you selected. Any filter state is a shareable URL.",
       },
     ],
     techStack: [
@@ -233,22 +233,22 @@ export const projects: ProjectData[] = [
       {
         title: "Star-emoji obfuscation",
         description:
-          "The translate.json patterns include variants like N★ke and A★idas because Yupoo sellers write brand names this way to avoid automated takedown systems.",
+          "Sellers write brand names like N★ke and A★idas to avoid automated takedown systems. The detection logic was built specifically to match these obfuscated variants using longest-match-first scanning, so modified listings are caught just as reliably as plain text ones.",
       },
       {
-        title: "EventSource POST workaround",
+        title: "Live streaming progress",
         description:
-          "The browser's built-in EventSource only supports GET requests. The progress stream uses raw fetch with ReadableStream instead, which supports POST and lets the seller URL go in the request body.",
+          "The backend streams twelve distinct event types over a server-sent event connection as crawling progresses, working around a browser limitation that would normally block SSE on a POST request. Albums populate the frontend before the crawl finishes.",
       },
       {
         title: "Grey/white normalization",
         description:
-          "Large neutral clusters get downweighted so white product backgrounds do not dominate the color profile. The clothing's actual color ends up driving the match.",
+          "The k-means pipeline runs on every cover image, but large neutral clusters (white backgrounds, grey garments) are downweighted before the color profile is stored, so the clothing's actual color drives the match rather than the product background.",
       },
       {
-        title: "LAB colorspace: implemented but unused",
+        title: "Incremental results",
         description:
-          "Full LAB conversion utilities exist in color_names.py. LAB is a colorspace designed to match how humans perceive color differences, making distances more accurate. k-means runs in BGR; LAB was explored but not shipped.",
+          "Each album is processed and written to the database as soon as it is scraped, not after the full crawl finishes. The frontend reflects new results in real time, so you can start filtering before the last page has been fetched.",
       },
     ],
   },
@@ -259,7 +259,7 @@ export const projects: ProjectData[] = [
     tagline:
       "Select text, get five rephrasings that fit your document. Surrounding context is included in every AI call.",
     overview:
-      "Paraphraser is a tokenized text editor where right-clicking any word or phrase sends surrounding context to an AI and returns five rephrasings. The context window is what makes it work: without surrounding text, AI rephrasings ignore the document's style and grammar. A provider hook switches between OpenRouter and a local Ollama instance without the UI knowing which one is active. Word-level synonym replacement uses the Datamuse API with an AI review pass to filter out contextually wrong synonyms. There is also a full CodeMirror code editing mode.",
+      "Paraphraser is a text editor where right-clicking any selection sends a context window of roughly forty surrounding words to an AI and streams five rephrasings back word by word. That surrounding context is what makes suggestions actually fit: without it, the AI has no idea what register or grammar your document is using. Accepting a suggestion triggers a word-level diff, and only the words that genuinely changed are treated as new edits, keeping the undo history intact across async AI calls. Synonym lookup fetches candidates from Datamuse, then sends them with the surrounding sentence to a second AI call that filters out anything contextually wrong. There is also a full CodeMirror 6 code editing mode.",
     accent: "#8b5cf6",
     tags: ["React", "TypeScript", "Frontend", "LLM API"],
     links: [{ label: "View on GitHub", href: "https://github.com/nickpalade/paraphraser" }],
@@ -268,94 +268,93 @@ export const projects: ProjectData[] = [
         icon: "MousePointer2",
         title: "Context-Aware Rephrasings",
         description:
-          "About forty tokens (words and punctuation) on each side of the selection are included in every AI call, so the output fits the document's style and grammatical context. Five alternatives stream back and appear in a sliding panel.",
+          "About forty words on each side of your selection are sent to the AI every time, so suggestions fit the document's style and grammar rather than just the selected phrase. Five alternatives stream back into a sliding panel.",
       },
       {
         icon: "Shuffle",
-        title: "Swappable AI Provider",
+        title: "Word-by-Word Streaming",
         description:
-          "useSyncExternalStore tracks which AI provider is active: OpenRouter (cloud) or local Ollama. UI components call useProvider() and never reference either implementation directly. The hook exposes a single streaming call function, and the caller does not know which provider runs it.",
+          "Rephrasings appear word by word as the AI generates them, not all at once when it finishes. All five options load at the same time, so the panel fills in quickly.",
       },
       {
         icon: "GitMerge",
-        title: "LCS Token Diff",
+        title: "Undo-Preserving Accept",
         description:
-          "When accepting a rephrasing, a two-pass longest common subsequence algorithm compares the old and new token arrays. LCS (longest common subsequence) finds the largest set of tokens that appear in both versions in the same order. Tokens in that shared set keep their IDs and undo history. Only genuinely new tokens get fresh IDs, so a full document rewrite does not wipe the undo stack.",
+          "When you accept a rephrasing, the app figures out which words actually changed. Words that stayed the same keep their place in the undo history. Only genuinely new words reset, so accepting a suggestion does not wipe your ability to undo earlier edits elsewhere in the document.",
       },
       {
         icon: "AlignLeft",
-        title: "Phrase Detection",
+        title: "Smart Phrase Detection",
         description:
-          "Hovering a word expands outward through function words (articles, prepositions, conjunctions), bridging them into a phrase selection. The expansion is capped at four tokens, stops at sentence boundaries, and waits 200ms before showing to avoid flickering during fast mouse movement.",
+          "Hovering a word automatically expands the selection to include surrounding small words like 'the' or 'of' to form a more natural phrase. The expansion stops at sentence boundaries and waits briefly before appearing to avoid flickering during fast mouse movement.",
       },
       {
         icon: "BookOpen",
-        title: "Datamuse + AI Synonym Review",
+        title: "AI-Filtered Synonyms",
         description:
-          "Word synonyms come from the Datamuse API, falling back to a 'means-like' query if fewer than three results come back. The list is sent to the AI with sentence context. The model returns a filtered subset plus optional multi-word replacements via range keys.",
+          "Hovering a word fetches synonym candidates from the Datamuse API. The list is then sent to the AI along with the surrounding sentence, and the AI filters out options that would sound wrong in context before showing them to you.",
       },
       {
         icon: "Code",
         title: "CodeMirror Code Mode",
         description:
-          "Full CodeMirror 6 editor with syntax highlighting. The same rephrase panel and synonym flow work on code comments and strings. A custom event bus coordinates undo history between CodeMirror's internal stack and the outer token stack.",
+          "A full code editor with syntax highlighting for writing and editing code. The same right-click rephrase panel and synonym picker work on code comments and strings, so you can rewrite documentation inline without leaving the editor.",
       },
     ],
     howItWorks: [
       {
         step: "Type or paste text",
         detail:
-          "The tokenizer splits input into Token[] objects with stable UUIDs. Whitespace is tokenized too so reconstruction is lossless. Smart quotes, curly apostrophes, and non-breaking spaces are all normalized on entry.",
+          "Your text is loaded into the editor and normalised so punctuation and spacing are handled consistently throughout.",
       },
       {
         step: "Right-click to rephrase",
         detail:
-          "A context window is built around the selection. The AI call fires with surrounding tokens included. Five rephrasings stream back.",
+          "The surrounding text is gathered and sent to the AI along with your selection. Five rephrasings stream back word by word into the panel.",
       },
       {
         step: "Accept a rephrasing",
         detail:
-          "LCS diff compares old and new tokens. Tokens that appear in both versions keep their IDs and history. New tokens get fresh IDs. The undo stack is updated.",
+          "The app identifies which words changed and which stayed the same. Unchanged words keep their undo history. Only new words are treated as fresh edits.",
       },
       {
         step: "Hover for synonyms",
         detail:
-          "After 200ms, the phrase detector expands the selection. Datamuse fetches synonym candidates, the AI filters them for context fit, and the synonym picker appears inline.",
+          "After a short pause, the selection expands to form a natural phrase. Synonym candidates are fetched and filtered by the AI for context fit, then shown inline.",
       },
       {
         step: "Ctrl+Z to undo",
         detail:
-          "The undo stack pops, and tokensRef and state update together. In code mode, the event bus coordinates with CodeMirror's own history.",
+          "Undo steps back through your edits in order. In code mode, undo works across both your manual edits and any accepted rephrasings.",
       },
     ],
     techStack: [
       { name: "React + TypeScript + Vite", purpose: "Frontend framework" },
       { name: "CodeMirror 6", purpose: "Code editing mode with syntax highlighting" },
-      { name: "OpenRouter API", purpose: "Cloud AI provider" },
-      { name: "Ollama (local)", purpose: "Local AI provider" },
+      { name: "OpenRouter API", purpose: "AI provider" },
       { name: "Datamuse API", purpose: "Word synonym lookup" },
       { name: "Tailwind CSS", purpose: "Styling" },
     ],
     highlights: [
       {
-        title: "tokensRef pattern",
+        title: "Reliable undo across async edits",
         description:
-          "The current token array lives in both a ref and React state. The ref gives async callbacks reliable access to the current value without capturing a stale snapshot. State triggers re-renders. Both update together.",
+          "When an AI call completes and you accept a suggestion, the app runs a word-level diff against the current document and only invalidates undo entries for words that actually changed. A live ref keeps the document state current throughout streaming, so there is no risk of a stale closure undoing the wrong thing.",
       },
       {
-        title: "Versioned localStorage keys",
+        title: "Saved work survives app updates",
         description:
-          "Keys like paraphraser_v2_tokens include a version number. Bumping the version automatically discards data saved in an old format, without any migration code.",
+          "Your document is written to localStorage on every change and restored on load. The storage format carries a version number, so a schema change in a future update cleanly discards incompatible data rather than attempting a broken parse that corrupts state.",
       },
       {
-        title: "Portal context menu",
+        title: "Right-click menu always fully visible",
         description:
-          "The right-click menu renders into document.body via a React portal (which places the element outside its parent in the DOM). This means overflow:hidden on the editor container cannot clip it.",
+          "The context menu is mounted via a portal to the document root rather than inside the editor's DOM subtree, so it is never clipped by overflow or z-index constraints on the editor container. It always renders fully in view, even on right-clicks near the edge.",
       },
       {
-        title: "Unused SDK packages",
+        title: "Responses stream word by word",
         description:
-          "@openrouter/sdk and ollama are in package.json but never imported. Raw fetch gives complete control over how streaming chunks are handled.",
+          "The streaming API response is chunked and rendered token by token as it arrives, so all five rephrasings fill in simultaneously and the panel feels live. There is no waiting for the full response to complete before anything appears.",
       },
     ],
   },
@@ -366,7 +365,7 @@ export const projects: ProjectData[] = [
     tagline:
       "Personal finance tracking without the bloat. Import your Revolut CSV, categorize transactions, and get spending forecasts.",
     overview:
-      "HabitHunter grew out of wanting to understand actual spending patterns without relying on a subscription finance app. It imports directly from Revolut CSV exports, auto-categorizes transactions using a learned merchant mapping that gets smarter every time you correct a wrong category, and runs linear regression on monthly totals to predict future spending. The entire prediction engine is written from scratch without any math libraries. There are 207 tests.",
+      "HabitHunter grew out of wanting to understand actual spending patterns without relying on a subscription finance app. It imports directly from Revolut CSV exports, auto-categorizes transactions using a learned merchant mapping that gets smarter every time you correct a wrong category, and runs linear regression on monthly totals to predict future spending. The entire prediction engine is written from scratch without any math libraries. 207 unit tests cover the application end to end, verifying the CSV parser, prediction engine, and merchant mapper across edge cases like malformed input and unusual character sets.",
     accent: "#f59e0b",
     tags: ["Python", "Flask", "SQL", "Full-Stack"],
     links: [{ label: "View on GitHub", href: "https://github.com/nickpalade/HabitHunter" }],
@@ -375,69 +374,69 @@ export const projects: ProjectData[] = [
         icon: "FileUp",
         title: "Revolut CSV Import",
         description:
-          "Parses signed amounts to classify income versus expenses. Duplicate detection uses a tolerance of 0.01 on (date, description, amount) triples to handle floating-point imprecision. A flash message reports how many transactions were imported and how many were skipped as duplicates.",
+          "Separates income from expenses automatically. Duplicate detection checks date, merchant, and amount, skipping any transaction that matches one already saved. A summary tells you how many transactions were imported and how many were skipped.",
       },
       {
         icon: "Map",
         title: "Self-Learning Merchant Mapper",
         description:
-          "Re-categorizing one transaction propagates the new category to every record with the same merchant description and writes it to a JSON lookup file. Future imports from that merchant auto-categorize without any further input.",
+          "Correcting a transaction's category updates every other transaction from the same merchant at the same time, and remembers the mapping for all future imports. The more you use it, the less you have to manually categorize.",
       },
       {
         icon: "TrendingUp",
-        title: "Hand-Rolled Linear Regression",
+        title: "Spending Forecasts",
         description:
-          "Ordinary least squares (a standard method for fitting a straight line through data points to minimize prediction error) implemented using only Python builtins. Produces next-month, next-three-months, yearly balance projections, per-category annual forecasts, and days until the current balance runs out.",
+          "A forecasting engine built from scratch without any external libraries produces next-month, next-three-months, and yearly balance projections, per-category annual forecasts, and an estimate of how many days your current balance will last.",
       },
       {
         icon: "DollarSign",
         title: "Multi-Currency Support",
         description:
-          "Exchange rates are fetched from exchangerate-api.com and cached for the process lifetime. Amounts are stored in their original currency with a currency column and converted to EUR, GBP, or USD only at display time.",
+          "Transactions are stored in their original currency and converted to EUR, GBP, or USD at display time using live exchange rates fetched from exchangerate-api.com.",
       },
       {
         icon: "BarChart2",
         title: "7 Chart.js Visualizations",
         description:
-          "Spending by category, top-5 doughnut chart, average spend by day of week, transaction frequency by weekday, monthly income vs expense trends, cumulative spending line, and category progress bars. All data is passed to Chart.js via Jinja2's tojson filter.",
+          "Spending by category, a top-5 doughnut chart, average spend by day of week, transaction frequency by weekday, monthly income vs expense trends, a cumulative spending line, and category progress bars.",
       },
       {
         icon: "CheckSquare",
         title: "207-Test Suite",
         description:
-          "pytest with session-scoped fixtures that wipe the database and merchant JSON before and after all tests. Edge cases include SQL injection, XSS, unicode emoji, CJK characters, negative zero, and float precision.",
+          "207 unit tests cover the full application, written to verify every layer of the codebase works correctly. Edge cases include malformed CSV input, unusual merchant name characters, and numeric edge cases in the prediction engine, demonstrating a disciplined approach to software quality.",
       },
     ],
     howItWorks: [
       {
         step: "Upload CSV",
         detail:
-          "RevolutImporter.parse_csv() reads the file, classifies transactions by sign, checks for duplicates with float tolerance, then saves non-duplicates to SQLite.",
+          "The importer reads your Revolut export, separates income from expenses, checks for duplicates by comparing date, merchant, and amount, then saves only the new transactions.",
       },
       {
         step: "Auto-categorize",
         detail:
-          "The merchant mapper does an exact lookup on the description string. Unknown merchants land in 'Other'.",
+          "Known merchants are matched against a learned lookup and assigned a category instantly. Merchants seen for the first time land in 'Other' until you correct them.",
       },
       {
         step: "Fix a category",
         detail:
-          "Re-categorizing propagates to all records with the same description and updates the JSON file. That merchant is now mapped for all future imports.",
+          "Changing one transaction's category updates every other transaction from the same merchant and saves the mapping. That merchant is categorized correctly on all future imports.",
       },
       {
         step: "View analytics",
         detail:
-          "/graphs-stats groups transactions by month, runs ordinary least squares regression on the totals, and feeds five prediction types to Chart.js via Jinja2 tojson.",
+          "The analytics page groups your transactions by month, runs the forecasting engine over the totals, and displays five types of spending predictions alongside seven charts.",
       },
       {
         step: "Set budgets",
         detail:
-          "Per-category limits are stored in SQLite. Each budget card shows amount spent, amount remaining (which can go negative), and a progress bar. A timeframe filter applies across the whole app via session.",
+          "Set a spending limit for any category. Each budget card shows how much you have spent, how much remains, and a progress bar. A timeframe filter applies across the whole app.",
       },
     ],
     techStack: [
       { name: "Python + Flask 3.1.2", purpose: "Web framework" },
-      { name: "SQLite3", purpose: "Database (no ORM, all hand-written SQL)" },
+      { name: "SQLite3", purpose: "Database" },
       { name: "Jinja2", purpose: "HTML templates" },
       { name: "Chart.js 4.4.0", purpose: "7 data visualizations" },
       { name: "pytest 9.0.2", purpose: "207-test suite" },
@@ -445,24 +444,24 @@ export const projects: ProjectData[] = [
     ],
     highlights: [
       {
-        title: "Dynamic object construction",
+        title: "Zero-boilerplate data loading",
         description:
-          "DataManager.load() uses type('Income', (), dict(row)) to build Python objects directly from SQL row dictionaries. No dataclasses, no ORM, no boilerplate.",
+          "Transaction rows from the database map directly into Python objects using sqlite3's row_factory, with no ORM or manual field mapping. Adding a new column to the schema makes it available in the application immediately.",
       },
       {
         title: "Save = full delete + reinsert",
         description:
-          "Every write deletes all records for the current user and reinserts the entire in-memory list. Simple, correct, and fast enough for personal finance data volumes.",
+          "Every write operation deletes all rows for the current user and reinserts the full in-memory transaction list. The strategy is simple and provably correct, which is the right tradeoff at personal finance data volumes where the overhead is negligible.",
       },
       {
-        title: "Composite-key URL routes",
+        title: "Transactions identified by their data, not an ID",
         description:
-          "Delete and edit routes encode (date, amount, description) as URL path segments. No integer IDs that could get out of sync. The handler iterates records and finds the first match within 0.01 float tolerance.",
+          "Edit and delete operations identify a transaction by its actual date, merchant, and amount rather than a synthetic primary key. The identifier shown on screen and the one used in the database query are always the same thing, so there is no ID column to drift out of sync.",
       },
       {
-        title: "OLS without libraries",
+        title: "Forecasting engine built from scratch",
         description:
-          "The entire regression engine uses Python builtins only: sum, range, len. A zero-denominator guard returns (None, None) and all callers check before predicting.",
+          "The forecasting engine implements linear regression using only Python's built-in functions, with no math, numpy, or statistics libraries. A data sufficiency check prevents the model from producing results when there are too few months to fit a meaningful line.",
       },
     ],
   },
@@ -473,27 +472,27 @@ export const projects: ProjectData[] = [
     tagline:
       "A social platform built to fight echo chambers. Chronological feed, raw vote counts, tag-based discovery. No algorithm.",
     overview:
-      "This started as a summer project before A-levels, motivated by reading about how social media recommendation systems create echo chambers and amplify misinformation. The design deliberately counters that: no ranking algorithm, no network-based filtering, posts shown in insertion order only, and like/dislike counts always shown as raw numbers rather than hidden behind vague engagement indicators. Built entirely without frameworks: pure PHP, MySQL, vanilla JS, and plain CSS.",
+      "This started as a summer project before A-levels, motivated by reading about how social media recommendation systems create echo chambers and amplify misinformation. The design deliberately counters that: no ranking algorithm, no network-based filtering, posts shown in insertion order only, and like/dislike counts always shown as raw numbers rather than hidden behind vague engagement indicators. Built entirely without frameworks, raw PHP, MySQL, vanilla JavaScript, and plain CSS, which meant implementing session handling, a self-referential recursive thread structure, and the shared data layer from scratch.",
     accent: "#f43f5e",
     tags: ["PHP", "JavaScript", "CSS", "SQL", "Full-Stack"],
     features: [
       {
         icon: "CornerDownRight",
-        title: "Self-Referential Thread Model",
+        title: "Infinite Thread Depth",
         description:
-          "Posts and comments share one table via a nullable ParentPost foreign key. Any comment can be opened as a full post with its own sub-replies, giving infinite threading depth with zero extra tables or recursive queries.",
+          "Posts and comments share the same structure. Any comment can be opened as its own thread with replies of its own, which can themselves be opened, and so on without limit. There is no maximum nesting depth and no separate comment system.",
       },
       {
         icon: "Heart",
-        title: "Unified Reaction Endpoint",
+        title: "Consistent Reaction System",
         description:
-          "All interaction types route through one PHP file dispatched by a type field in the JSON body: like, dislike, save, unlike, check, checkSave, CountLikesDislikes. Toggle logic handles the case where the same reaction already exists.",
+          "Likes, dislikes, and saves all go through one backend system. Reacting again with the same action removes it; switching replaces the old one.",
       },
       {
         icon: "Layout",
-        title: "Template DOM Cloning",
+        title: "No-Reload Post Rendering",
         description:
-          "JavaScript renders new posts by cloning hidden placeholder elements that are already in the HTML page. No dependencies, no build step, no virtual DOM. Just the browser's native cloneNode.",
+          "New posts appear without a full reload. JavaScript fills in templates already in the page, so the feed updates instantly with no frameworks and no build step.",
       },
       {
         icon: "List",
@@ -503,48 +502,48 @@ export const projects: ProjectData[] = [
       },
       {
         icon: "Link",
-        title: "URL State with pushState",
+        title: "Directly Linkable Posts",
         description:
-          "Clicking a post updates the URL via history.pushState so individual posts are directly linkable. Back navigation works without a full page reload.",
+          "Clicking a post updates the URL so it can be copied and shared. Opening that link takes you straight to the post. The back button works as expected without reloading the full page.",
       },
       {
         icon: "Hash",
         title: "Tag-Based Discovery",
         description:
-          "Users find content by topic tag rather than by following accounts. Designed to cross-cut social bubbles: you see posts about a topic from anyone who tagged it, not just people in your network.",
+          "Users find content by topic tag rather than by following accounts. A post about a topic shows up whether or not you follow the person who wrote it.",
       },
     ],
     howItWorks: [
       {
         step: "Register and log in",
         detail:
-          "A PHP session is created. The landing page fetches all posts via /fetch/fetch_posts.inc.php and renders them by cloning DOM templates.",
+          "Creating an account and logging in gives you a session. The feed loads immediately, showing all posts in the order they were created.",
       },
       {
         step: "Create a post",
         detail:
-          "submitPost.inc.php detects the presence of a title field to distinguish top-level posts from comments. ParentPost is NULL for posts and set to the parent PostID for comments.",
+          "The same form handles both posts and replies. Posts get a title; replies link back to the post they belong to.",
       },
       {
         step: "React to a post",
         detail:
-          "submitReaction.inc.php reads the type field and either inserts, deletes, or queries the reactions table. Toggle logic: the same reaction deletes it, a different reaction replaces it.",
+          "Clicking like, dislike, or save sends your reaction. Clicking the same reaction again removes it. Switching reactions replaces the previous one.",
       },
       {
         step: "View a thread",
         detail:
-          "fetch_specific_post and fetch_post_replies fetch the post and its direct replies. The URL updates via pushState. Any reply can be opened the same way.",
+          "Clicking a post loads it along with its direct replies. The URL updates so the thread is bookmarkable. Any reply can be opened as its own thread the same way.",
       },
       {
         step: "See vote counts",
         detail:
-          "CountLikesDislikes runs a conditional SUM query and returns both counts. Both numbers are always displayed, never hidden.",
+          "Both the like and dislike count are fetched and displayed together. Neither number is hidden or combined into a single vague score.",
       },
     ],
     techStack: [
-      { name: "PHP", purpose: "Backend (no framework, mysqli prepared statements)" },
+      { name: "PHP", purpose: "Backend (no framework)" },
       { name: "MySQL", purpose: "Database" },
-      { name: "Vanilla JavaScript", purpose: "Frontend rendering via DOM template cloning" },
+      { name: "Vanilla JavaScript", purpose: "Frontend rendering" },
       { name: "Plain CSS", purpose: "Per-page stylesheets" },
       { name: "Apache/PHP server", purpose: "Deployment" },
     ],
@@ -552,22 +551,22 @@ export const projects: ProjectData[] = [
       {
         title: "One table for posts and comments",
         description:
-          "ParentPost = NULL is a top-level post. ParentPost = any PostID is a comment at any depth. You can nest arbitrarily without any schema changes.",
+          "A top-level post and a deeply nested reply are stored in the same table with the same schema. A single parent reference field is what creates the thread structure. The same SQL queries and PHP templates handle both, making the recursive nesting effectively unlimited with no special-casing.",
       },
       {
-        title: "fetch_functions.inc.php",
+        title: "Shared query layer",
         description:
-          "A shared terminal include that all fetch endpoints drop into at the end: execute the statement, join the users table to get usernames, strip TimeWatched, echo the JSON array.",
+          "Every data-fetching endpoint runs through a common finishing function: execute the query, join usernames from the users table, and return JSON. New endpoints only need the query itself, not any of the plumbing around it.",
       },
       {
-        title: "Conditional SUM aggregation",
+        title: "One query for both counts",
         description:
-          "CountLikesDislikes uses SUM(CASE WHEN reaction_type = 'like' THEN 1 ELSE 0 END) to get both like and dislike counts in one query rather than two separate selects.",
+          "Like and dislike counts are fetched in a single aggregated query that groups reactions by type. Both numbers arrive in one database round trip and are always displayed side by side, with neither hidden or blended into a composite score.",
       },
       {
-        title: "Built solo before A-levels",
+        title: "Anti-engagement design",
         description:
-          "The anti-echo-chamber motivation is baked into every design decision: chronological feed, visible raw vote ratios, tag-based not social-graph-based discovery. No feature was added that would increase engagement at the cost of that goal.",
+          "Every feature decision was filtered through one question: does this increase engagement at the cost of accuracy or diversity? The chronological feed, raw vote ratios, and tag-based discovery all exist specifically because they refuse to optimize for time on site.",
       },
     ],
   },
@@ -576,88 +575,109 @@ export const projects: ProjectData[] = [
     index: 6,
     title: "Roblox Project",
     tagline:
-      "A complete Roblox game: over 8,000 lines of Luau, written solo from start to finish, with custom mechanics and a full server-client architecture.",
+      "A fully playable Roblox game built alone: mine crystals, train strength, collect and evolve pets, and unlock new zones. Over 8,000 lines of Luau.",
     overview:
-      "A complete Roblox game written entirely solo in Luau. Over 8,000 lines covering custom game mechanics, a full UI system, and a server-client architecture built around RemoteEvents and RemoteFunctions. All game-critical logic runs server-side. Clients send intent, the server validates and applies it. Player data persists across sessions via Roblox DataStore.",
+      "A mining and progression game built entirely solo on Roblox. The core loop: punch rocks to shatter crystals and earn money, punch training bags to grow your strength (which determines how fast rocks break), and equip pets that multiply everything you earn. Progress unlocks new zones with harder rocks and bigger payouts. Every system, from the rock health bars and live efficiency score to the pet evolution mechanic, daily login bonus, and anti-cheat, was designed and coded from scratch in type-annotated Luau. No external plugins. No borrowed scripts. Over 8,000 lines, one developer.",
     accent: "#f97316",
     tags: ["Lua", "Game Dev"],
     links: [{ label: "Play on Roblox", href: "https://www.roblox.com/games/13230751727/" }],
     features: [
       {
-        icon: "Server",
-        title: "Server-Client Architecture",
+        icon: "Zap",
+        title: "Rock Mining Loop",
         description:
-          "RemoteEvents and RemoteFunctions handle all communication between the server and each player's client. Clients fire events expressing what they want to do. The server validates the action, applies it to game state, and broadcasts the result. No game-critical logic runs on the client where it could be tampered with.",
+          "Each rock has a layer of crystals and a solid core. Punching it chips away crystals one by one, each shattering with a sound and particle burst, then a final hit destroys the core for a bigger payout. A dual progress bar above the rock tracks both phases. Rocks respawn in random positions across the zone once broken, with a minimum spacing check so they never stack on top of each other.",
       },
       {
-        icon: "Gamepad2",
-        title: "Custom Game Mechanics",
+        icon: "TrendingUp",
+        title: "Strength Training",
         description:
-          "Unique gameplay systems built from scratch in Luau. No external plugins or borrowed scripts. Every mechanic was designed and implemented for this project specifically.",
+          "Hitting a training bag increases your strength stat. Higher strength means more damage per punch, so rocks break faster and money stacks up quicker. A VIP bag gives a larger bonus and requires a game pass. Strength shows on the in-game leaderboard and is saved across sessions.",
       },
       {
-        icon: "Layout",
-        title: "Full UI System",
+        icon: "Heart",
+        title: "Pet Collection and Evolution",
         description:
-          "Custom HUD and interface elements built with Roblox's UI framework. All UI logic runs client-side via LocalScripts, with server data delivered through RemoteEvents.",
+          "Pets follow the player with a bouncing animation and multiply all money earned. Equipping multiple pets stacks their bonuses. Combining three identical pets of the same tier merges them into one evolved version with a higher multiplier. All equipped pets are visible to every other player in the server.",
       },
       {
-        icon: "Database",
-        title: "Data Persistence",
+        icon: "Map",
+        title: "Multi-Zone Progression",
         description:
-          "Player data is saved and loaded across sessions using Roblox DataStore. The system handles load failures gracefully and auto-saves at regular intervals as well as when a player leaves.",
+          "Multiple unlockable zones are connected by portals. Each zone has its own rock types and visual atmosphere that fades in smoothly when you arrive. A level gate checks your stats before allowing entry and tells you what you still need. When you move zones, the previous one is hidden to keep performance smooth.",
       },
       {
-        icon: "Code",
-        title: "8,000+ Lines of Luau",
+        icon: "BarChart2",
+        title: "Live Efficiency Score",
         description:
-          "The full codebase is one developer's work with no team and no asset store scripts. Luau's gradual type system is used throughout, adding type annotations to a language that does not require them, catching errors that would otherwise only appear at runtime.",
+          "The server tracks money earned per minute for every player and divides it by their strength to produce a live efficiency score. This displays above each player's head in real time, colour-coded from red to green based on your personal best. The score fades out after a long drop in performance.",
+      },
+      {
+        icon: "CheckSquare",
+        title: "Daily Login Bonus",
+        description:
+          "A counter tracks how many times you have joined in a given period. Log in 5 times within a 19-hour window and your total money gets a 1.25x boost. The counter and window reset automatically and carry over between sessions, so there is no way to miss progress from a previous visit.",
       },
     ],
     howItWorks: [
       {
-        step: "Player joins",
+        step: "Join",
         detail:
-          "The server loads player data from DataStore and sends initial state to the connecting client.",
+          "Your stats load from the server: money, strength, pets, and zone progress. Any pets you had equipped last session follow you straight away.",
       },
       {
-        step: "Client initializes",
+        step: "Punch rocks",
         detail:
-          "LocalScripts set up the UI, input handling, and visual feedback. All display logic stays client-side.",
+          "Each punch chips away crystals and earns money. Clear all the crystals, then land the final hit to destroy the core for a bigger reward. Rocks respawn across the zone over time.",
       },
       {
-        step: "Player acts",
+        step: "Train at a bag",
         detail:
-          "The client fires a RemoteEvent with intent. The server validates the action, applies it to game state, and broadcasts relevant results.",
+          "Hitting a training bag raises your strength. Higher strength means each punch does more damage, so you break rocks faster as you progress.",
       },
       {
-        step: "Session ends",
+        step: "Equip pets",
         detail:
-          "Player data is auto-saved on leave. Persistent state carries over to the next session.",
+          "Open your inventory and equip pets to follow you and multiply your earnings. Three identical pets at the same tier can be merged into one evolved version with a higher multiplier.",
+      },
+      {
+        step: "Move to the next zone",
+        detail:
+          "Walk through a portal. If your stats are high enough, you teleport in. Otherwise, a message tells you what you still need. Each new zone has tougher rocks and bigger payouts.",
+      },
+      {
+        step: "Come back daily",
+        detail:
+          "Logging in consistently counts toward a join streak. Hit 5 logins in the window and your money gets a 1.25x boost. The counter resets automatically for the next cycle.",
       },
     ],
     techStack: [
       { name: "Luau", purpose: "Primary scripting language (gradual typing throughout)" },
-      { name: "Roblox Studio", purpose: "Development environment" },
-      { name: "Roblox DataStore", purpose: "Player data persistence across sessions" },
-      { name: "RemoteEvents / RemoteFunctions", purpose: "Server-client communication" },
-      { name: "Roblox UI Framework", purpose: "All interface elements" },
+      { name: "Roblox Studio", purpose: "Development environment and game engine" },
+      { name: "Roblox DataStore", purpose: "Persistent storage for stats, money, and pet inventory" },
+      { name: "RemoteEvents / RemoteFunctions", purpose: "Secure server-client communication" },
+      { name: "TweenService", purpose: "Animations for UI, zone transitions, and music" },
     ],
     highlights: [
       {
-        title: "Server authority",
+        title: "Server runs the game, client shows it",
         description:
-          "Every game-critical decision happens on the server. Clients express intent via RemoteEvents and receive results. They never write game state directly, which prevents cheating.",
+          "Every game-changing action (punching a rock, gaining strength, earning money) is processed on the server. The client sends an intent and receives a verified result. All stat validation, damage calculation, and progression logic lives in one authoritative place, and players have no ability to fake progress from their own machine.",
       },
       {
-        title: "Solo 8,000-line codebase",
+        title: "Live efficiency score above every player",
         description:
-          "Written entirely alone with no external scripts or asset store plugins. Every mechanic, UI element, data layer, and server behavior is original code.",
+          "The server tracks coins earned over a rolling 60-second window for every player, divides by their strength stat, and broadcasts the result as a real-time efficiency score shown above each player's head. The score is colour-coded relative to each player's personal best and fades out during long performance drops.",
       },
       {
-        title: "Live published game",
+        title: "Zone streaming",
         description:
-          "The game is live on Roblox with real players. The link in the portfolio goes straight to the game page.",
+          "The game has multiple zones, but only the active one is rendered at any time. Moving zones immediately hides the previous one and activates the next, keeping frame rate stable regardless of how large the total map is. This was implemented manually with no engine-level streaming support.",
+      },
+      {
+        title: "8,000 lines, one developer",
+        description:
+          "Every system, from the mining loop and pet evolution to the anti-cheat, music player, efficiency tracker, and UI, was written alone with no external scripts or plugins. Luau type annotations were applied throughout the codebase, not just in spots, so type errors surface at edit time rather than at runtime in a live game.",
       },
     ],
   },

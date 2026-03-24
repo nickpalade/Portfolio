@@ -1,6 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, AnimatePresence } from "framer-motion";
 import {
   Cpu,
   Camera,
@@ -114,7 +114,7 @@ function SectionHeading({
     <h2
       className="text-2xl md:text-3xl font-bold mb-8"
       style={{
-        background: `linear-gradient(135deg, rgb(var(--foreground)), ${accent})`,
+        backgroundImage: `linear-gradient(135deg, rgb(var(--foreground)), ${accent})`,
         WebkitBackgroundClip: "text",
         WebkitTextFillColor: "transparent",
         backgroundClip: "text",
@@ -296,7 +296,7 @@ function HighlightCard({
         transition={{ type: "spring", stiffness: 300, damping: 22 }}
       >
         <h3
-          className="font-semibold mb-2 text-sm shimmer"
+          className="font-semibold mb-2 text-sm"
           style={{ color: accent }}
         >
           {title}
@@ -312,13 +312,22 @@ function NavProjectCard({
   project,
   direction,
   isMobile,
+  onNavigate,
 }: {
   project: { slug: string; title: string; tagline: string; accent: string; index: number };
   direction: "prev" | "next";
   isMobile: boolean;
+  onNavigate: (slug: string) => void;
 }) {
+  const handleClick = (e: React.MouseEvent) => {
+    if (e.button === 0 && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
+      e.preventDefault();
+      onNavigate(project.slug);
+    }
+  };
+
   return (
-    <Link to={`/projects/${project.slug}`} className="flex-1 min-w-0">
+    <Link to={`/projects/${project.slug}`} className="flex-1 min-w-0" onClick={handleClick}>
       <motion.div
         className="glass-card rounded-xl p-5 h-full cursor-pointer"
         style={{ borderColor: `${project.accent}30` }}
@@ -359,10 +368,22 @@ export default function ProjectDetail() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  const navigateToProject = useCallback(
+    async (targetSlug: string) => {
+      setIsTransitioning(true);
+      await new Promise((resolve) => setTimeout(resolve, 260));
+      window.scrollTo(0, 0);
+      navigate(`/projects/${targetSlug}`);
+    },
+    [navigate]
+  );
 
   const project = projects.find((p) => p.slug === slug);
 
   useEffect(() => {
+    setIsTransitioning(false);
     window.scrollTo(0, 0);
   }, [slug]);
 
@@ -388,6 +409,19 @@ export default function ProjectDetail() {
 
   return (
     <article className="w-full">
+      {/* ── Page transition overlay ───────────────────────────────────────────── */}
+      <AnimatePresence>
+        {isTransitioning && (
+          <motion.div
+            className="fixed inset-0 pointer-events-none"
+            style={{ zIndex: 9999, backgroundColor: "rgb(var(--background))" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+          />
+        )}
+      </AnimatePresence>
       {/* ── Hero ──────────────────────────────────────────────────────────────── */}
       <section
         className="relative min-h-[60vh] flex flex-col justify-end pb-16 overflow-hidden"
@@ -462,9 +496,9 @@ export default function ProjectDetail() {
               transition={{ duration: 0.6, delay: 0.15, ease: EASE }}
             >
               <h1
-                className="text-5xl md:text-7xl font-black tracking-tight leading-none"
+                className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tight leading-none break-words"
                 style={{
-                  background: `linear-gradient(135deg, rgb(var(--foreground)) 30%, ${accent})`,
+                  backgroundImage: `linear-gradient(135deg, rgb(var(--foreground)) 30%, ${accent})`,
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                   backgroundClip: "text",
@@ -610,13 +644,22 @@ export default function ProjectDetail() {
       </div>
 
       {/* ── Navigation footer ─────────────────────────────────────────────────── */}
-      <div className="border-t border-border/50">
-        <div className="container mx-auto max-w-5xl px-4 md:px-8 py-12">
+      <div className="relative overflow-hidden">
+        {/* Dot grid background */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: `radial-gradient(circle, ${accent}30 1px, transparent 1px)`,
+            backgroundSize: "20px 20px",
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/60 to-background pointer-events-none" />
+        <div className="container mx-auto max-w-5xl px-4 md:px-8 py-12 relative z-10">
           <Section>
             <h2 className="text-lg font-semibold text-muted-foreground mb-6">More Projects</h2>
             <div className="flex flex-col sm:flex-row gap-4">
-              <NavProjectCard project={prevProject} direction="prev" isMobile={isMobile} />
-              <NavProjectCard project={nextProject} direction="next" isMobile={isMobile} />
+              <NavProjectCard project={prevProject} direction="prev" isMobile={isMobile} onNavigate={navigateToProject} />
+              <NavProjectCard project={nextProject} direction="next" isMobile={isMobile} onNavigate={navigateToProject} />
             </div>
           </Section>
         </div>

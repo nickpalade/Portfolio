@@ -48,11 +48,30 @@ function Navbar() {
     };
   }, []);
 
+  const smoothScrollTo = (target: Element) => {
+    const startY = window.scrollY;
+    const endY = (target as HTMLElement).getBoundingClientRect().top + startY;
+    const duration = 900;
+    const startTime = performance.now();
+
+    const easeInOut = (t: number) =>
+      t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+    const step = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      window.scrollTo(0, startY + (endY - startY) * easeInOut(progress));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+
+    requestAnimationFrame(step);
+  };
+
   const handleNav = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
     if (location.pathname === "/") {
       const target = document.querySelector(href);
-      if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (target) smoothScrollTo(target);
     } else {
       navigate("/" + href);
     }
@@ -151,12 +170,28 @@ function Navbar() {
   );
 }
 
-function Footer() {
-  const isMobile = useIsMobile();
+function smoothScrollToSelector(selector: string) {
+  const target = document.querySelector(selector);
+  if (!target) return;
+  const startY = window.scrollY;
+  const endY = (target as HTMLElement).getBoundingClientRect().top + startY;
+  const duration = 900;
+  const startTime = performance.now();
+  const easeInOut = (t: number) =>
+    t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  const step = (now: number) => {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    window.scrollTo(0, startY + (endY - startY) * easeInOut(progress));
+    if (progress < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
 
+function Footer() {
   return (
     <footer className="border-t py-6 md:py-0">
-      <div className="container mx-auto flex flex-col items-center justify-between gap-4 md:h-16 md:flex-row px-4 md:px-8 text-sm text-muted-foreground">
+      <div className="container mx-auto flex items-center justify-center md:h-16 px-4 md:px-8 text-sm text-muted-foreground">
         <motion.p
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -164,32 +199,6 @@ function Footer() {
         >
           &copy; {new Date().getFullYear()} Nick. All rights reserved.
         </motion.p>
-        <div className="flex items-center gap-4">
-          <motion.a
-            href="#about"
-            className="hover:text-primary transition-colors"
-            whileHover={isMobile ? undefined : { x: 3, color: "rgb(var(--primary))" }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            About
-          </motion.a>
-          <motion.a
-            href="#projects"
-            className="hover:text-primary transition-colors"
-            whileHover={isMobile ? undefined : { x: 3, color: "rgb(var(--primary))" }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            Projects
-          </motion.a>
-          <motion.a
-            href="#contact"
-            className="hover:text-primary transition-colors"
-            whileHover={isMobile ? undefined : { x: 3, color: "rgb(var(--primary))" }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            Contact
-          </motion.a>
-        </div>
       </div>
     </footer>
   );

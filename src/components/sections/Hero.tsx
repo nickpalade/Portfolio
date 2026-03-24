@@ -5,6 +5,24 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
+function smoothScrollTo(selector: string) {
+  const target = document.querySelector(selector);
+  if (!target) return;
+  const startY = window.scrollY;
+  const endY = (target as HTMLElement).getBoundingClientRect().top + startY;
+  const duration = 500;
+  const startTime = performance.now();
+  const easeInOut = (t: number) =>
+    t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+  const step = (now: number) => {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    window.scrollTo(0, startY + (endY - startY) * easeInOut(progress));
+    if (progress < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
 const ROLES = ["developer", "designer", "builder"];
 
 const containerVariants = {
@@ -48,7 +66,7 @@ export default function Hero() {
   }, []);
 
   const scrollToProjects = () => {
-    document.querySelector("#projects")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    smoothScrollTo("#projects");
   };
 
   return (
@@ -138,9 +156,7 @@ export default function Hero() {
             <Button
               variant="outline"
               size="lg"
-              onClick={() =>
-                document.querySelector("#contact")?.scrollIntoView({ behavior: "smooth" })
-              }
+              onClick={() => smoothScrollTo("#contact")}
             >
               Get in Touch
             </Button>

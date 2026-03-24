@@ -19,7 +19,7 @@ const projects: Project[] = [
   {
     title: "HomeworkHacker",
     description:
-      "An AI you can talk to while doing homework. Say \"hey buddy\" and it starts listening. The backend runs YOLOv5 on the camera. Hold your phone for ten seconds and the AI interrupts you, bypasses mute to do it. Two personality modes: patient tutor and sarcastic friend. Most of the complexity lives in 9 custom React hooks managing a four-state voice FSM, streaming Gemini responses, and screen capture.",
+      "A React + Python full-stack tutor that listens for a wake word, streams responses out loud as they generate, and runs a YOLOv5 object detection model against your webcam the whole time. Hold your phone in frame for ten seconds and it interrupts whatever it is doing to call you out, even through a muted tab. Switch between a patient tutor and a sarcastic friend who throws in an extra comment on top of the interruption when you get caught.",
     tags: ["React", "TypeScript", "Python", "Full-Stack", "Comp Vision", "LLM API"],
     accent: "#6366f1",
     link: {
@@ -31,7 +31,7 @@ const projects: Project[] = [
   {
     title: "yupooscraper",
     description:
-      "Yupoo sellers have no search, just hundreds of album thumbnails and no way to filter any of it. This crawls a seller's listing, runs each cover image through a color clustering pipeline in OpenCV, tags by brightness, aspect ratio, and brand name, and stores everything locally. The frontend has compound tag search, color similarity matching, and live scrape progress via SSE. Every filter serializes into the URL so searches are shareable.",
+      "Yupoo is where wholesale clothing sellers post their catalogs, but there's no search. Just pages of unlabeled thumbnails. This scrapes a seller's entire catalog using a concurrent pipeline of async workers, runs each cover image through a k-means color clustering algorithm to extract dominant colors, and detects brand names even when sellers write them as \"N★ke\" or \"A★idas\" to dodge takedowns. Filter by color, brand, or clothing type, and any search state becomes a shareable URL.",
     tags: ["React", "TypeScript", "Python", "Full-Stack", "Comp Vision", "SQL"],
     accent: "#10b981",
     link: {
@@ -43,7 +43,7 @@ const projects: Project[] = [
   {
     title: "Paraphraser",
     description:
-      "Select text, get five rephrasings back, with surrounding context included in the model call so the output actually fits the document. Runs against OpenRouter or a local Ollama instance; the hook that picks the provider keeps the UI from caring which one is active. There's also a code editing mode with CodeMirror and word-level synonym replacement on top of the full-sentence paraphrasing.",
+      "Right-click any word or phrase and five rephrasings stream back word by word as the AI generates them. About forty words on either side of your selection go into the prompt, which is what makes suggestions actually fit your document. Accepting one is smarter than it sounds: the app diffs which words genuinely changed and only those reset the undo history, so earlier edits stay undoable. There's a CodeMirror code editing mode too, for rewriting comments without switching tools.",
     tags: ["React", "TypeScript", "Frontend", "LLM API"],
     accent: "#8b5cf6",
     link: {
@@ -55,7 +55,7 @@ const projects: Project[] = [
   {
     title: "HabitHunter",
     description:
-      "A personal finance tracker built to make sense of spending without the bloat of a full budgeting app. Imports directly from Revolut CSV exports, auto-categorizes transactions using a merchant mapping system, and runs linear regression to predict next month's spending by category. Has multi-currency support, monthly budget targets, and 207 tests.",
+      "Drop in your Revolut CSV and it auto-categorizes transactions by merchant. Correct one wrong category and it fixes every other transaction from that merchant and saves the mapping for future imports. Spending forecasts run through a linear regression engine written from scratch without any math libraries. Seven charts, monthly budget caps per category, and 207 unit tests written to verify the whole thing works correctly under real-world edge cases.",
     tags: ["Python", "Flask", "SQL", "Full-Stack"],
     accent: "#f59e0b",
     link: {
@@ -67,7 +67,7 @@ const projects: Project[] = [
   {
     title: "Social Media Website",
     description:
-      "Started this because of my fascination with the downsides of social media and its tendency to create echo chambers and spread misinformation. I set out to build a platform that encouraged healthy discussions and diverse perspectives, developed solo in the summer before my A-levels. Contains core social features: posting, commenting, liking, and browsing.",
+      "Built the summer before A-levels after reading about how recommendation algorithms push people into opinion bubbles. Constructed entirely without frameworks, raw PHP and vanilla JavaScript, which meant implementing everything from session handling to the recursive thread system by hand. Posts appear in chronological order with no ranking, likes and dislikes always shown as separate raw numbers, and content found through topic tags rather than following accounts.",
     tags: ["PHP", "JavaScript", "CSS", "SQL", "Full-Stack"],
     accent: "#f43f5e",
     slug: "socialmedia",
@@ -75,7 +75,7 @@ const projects: Project[] = [
   {
     title: "Roblox Project",
     description:
-      "A fully featured Roblox game with over 8,000 lines of Luau code, built entirely solo. Includes custom game mechanics, UI systems, and server-client architecture.",
+      "A mining and progression game built solo on Roblox: over 8,000 lines of type-annotated Luau, no borrowed scripts. Punch rocks to earn money, train strength to break them faster, collect and merge pets to multiply earnings. All game logic runs on the server, clients only send input and receive results, so stats cannot be faked or tampered with. There's a live efficiency score above every player's head, calculated server-side from earnings versus strength.",
     tags: ["Lua", "Game Dev"],
     accent: "#f97316",
     link: {
@@ -128,7 +128,7 @@ function ProjectCard({ project, index, isMobile }: { project: Project; index: nu
   const navigate = useNavigate();
   const isInView = useInView(ref, { once: true, margin: "-60px" });
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  // Parallax zeroed on mobile — still creates subscription but avoids per-card rAF overhead
+  // Parallax zeroed on mobile - still creates subscription but avoids per-card rAF overhead
   const cardY = useTransform(scrollYProgress, [0, 1], isMobile ? [0, 0] : [30, -30]);
 
   const handleCardClick = (e: React.MouseEvent) => {
