@@ -1,10 +1,11 @@
 import { useState, useRef } from "react";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, ImageIcon, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion, useInView, useScroll, useTransform } from "framer-motion";
-import { SpotlightCard } from "@/components/ui/SpotlightCard";
+import { motion, useInView } from "framer-motion";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { Link, useNavigate } from "react-router-dom";
+
+import { useCardTransition } from "@/context/CardTransitionContext";
 
 interface Project {
   title: string;
@@ -19,55 +20,43 @@ const projects: Project[] = [
   {
     title: "HomeworkHacker",
     description:
-      "A React + Python full-stack tutor that listens for a wake word, streams responses out loud as they generate, and runs a YOLOv5 object detection model against your webcam the whole time. Hold your phone in frame for ten seconds and it interrupts whatever it is doing to call you out, even through a muted tab. Switch between a patient tutor and a sarcastic friend who throws in an extra comment on top of the interruption when you get caught.",
+      "A React + Python full-stack tutor that listens for a wake word, streams responses out loud as they generate, and runs a YOLOv5 object detection model against your webcam the whole time. Hold your phone in frame for ten seconds and it interrupts whatever it is doing to call you out, even through a muted tab.",
     tags: ["React", "TypeScript", "Python", "Full-Stack", "Comp Vision", "LLM API"],
     accent: "#6366f1",
-    link: {
-      label: "View on GitHub",
-      href: "https://github.com/nickpalade/HomeworkHacker",
-    },
+    link: { label: "GitHub", href: "https://github.com/nickpalade/HomeworkHacker" },
     slug: "homeworkhacker",
   },
   {
     title: "yupooscraper",
     description:
-      "Yupoo is where wholesale clothing sellers post their catalogs, but there's no search. Just pages of unlabeled thumbnails. This scrapes a seller's entire catalog using a concurrent pipeline of async workers, runs each cover image through a k-means color clustering algorithm to extract dominant colors, and detects brand names even when sellers write them as \"N★ke\" or \"A★idas\" to dodge takedowns. Filter by color, brand, or clothing type, and any search state becomes a shareable URL.",
+      "Yupoo is where wholesale clothing sellers post their catalogs, but there's no search. This scrapes a seller's entire catalog, runs images through k-means color clustering, and detects brand names even when sellers write them as \"N★ke\" to dodge takedowns.",
     tags: ["React", "TypeScript", "Python", "Full-Stack", "Comp Vision", "SQL"],
     accent: "#10b981",
-    link: {
-      label: "View on GitHub",
-      href: "https://github.com/nickpalade/yupooscraper",
-    },
+    link: { label: "GitHub", href: "https://github.com/nickpalade/yupooscraper" },
     slug: "yupooscraper",
   },
   {
     title: "Paraphraser",
     description:
-      "Right-click any word or phrase and five rephrasings stream back word by word as the AI generates them. About forty words on either side of your selection go into the prompt, which is what makes suggestions actually fit your document. Accepting one is smarter than it sounds: the app diffs which words genuinely changed and only those reset the undo history, so earlier edits stay undoable. There's a CodeMirror code editing mode too, for rewriting comments without switching tools.",
+      "Right-click any word or phrase and five rephrasings stream back word by word. Forty words of context on either side make suggestions fit the document. Accepting one diffs the actual changes and only resets that part of the undo history.",
     tags: ["React", "TypeScript", "Frontend", "LLM API"],
     accent: "#8b5cf6",
-    link: {
-      label: "View on GitHub",
-      href: "https://github.com/nickpalade/paraphraser",
-    },
+    link: { label: "GitHub", href: "https://github.com/nickpalade/paraphraser" },
     slug: "paraphraser",
   },
   {
     title: "HabitHunter",
     description:
-      "Drop in your Revolut CSV and it auto-categorizes transactions by merchant. Correct one wrong category and it fixes every other transaction from that merchant and saves the mapping for future imports. Spending forecasts run through a linear regression engine written from scratch without any math libraries. Seven charts, monthly budget caps per category, and 207 unit tests written to verify the whole thing works correctly under real-world edge cases.",
+      "Drop in your Revolut CSV and it auto-categorizes transactions by merchant. Correct one wrong category and it fixes every other from that merchant. Spending forecasts via a linear regression engine built from scratch. 207 unit tests.",
     tags: ["Python", "Flask", "SQL", "Full-Stack"],
     accent: "#f59e0b",
-    link: {
-      label: "View on GitHub",
-      href: "https://github.com/nickpalade/HabitHunter",
-    },
+    link: { label: "GitHub", href: "https://github.com/nickpalade/HabitHunter" },
     slug: "habithunter",
   },
   {
     title: "Social Media Website",
     description:
-      "Built the summer before A-levels after reading about how recommendation algorithms push people into opinion bubbles. Constructed entirely without frameworks, raw PHP and vanilla JavaScript, which meant implementing everything from session handling to the recursive thread system by hand. Posts appear in chronological order with no ranking, likes and dislikes always shown as separate raw numbers, and content found through topic tags rather than following accounts.",
+      "Raw PHP and vanilla JavaScript — no frameworks. Session handling, recursive thread system, and chronological feeds built by hand. Designed in reaction to how recommendation algorithms push people into opinion bubbles.",
     tags: ["PHP", "JavaScript", "CSS", "SQL", "Full-Stack"],
     accent: "#f43f5e",
     slug: "socialmedia",
@@ -75,244 +64,245 @@ const projects: Project[] = [
   {
     title: "Roblox Project",
     description:
-      "A mining and progression game built solo on Roblox: over 8,000 lines of type-annotated Luau, no borrowed scripts. Punch rocks to earn money, train strength to break them faster, collect and merge pets to multiply earnings. All game logic runs on the server, clients only send input and receive results, so stats cannot be faked or tampered with. There's a live efficiency score above every player's head, calculated server-side from earnings versus strength.",
+      "A mining and progression game built solo: over 8,000 lines of type-annotated Luau, no borrowed scripts. All game logic runs on the server, clients only send input and receive results — stats cannot be faked.",
     tags: ["Lua", "Game Dev"],
     accent: "#f97316",
-    link: {
-      label: "Play on Roblox",
-      href: "https://www.roblox.com/games/13230751727/",
-    },
+    link: { label: "Play on Roblox", href: "https://www.roblox.com/games/13230751727/" },
     slug: "roblox",
   },
 ];
 
 const allTags = ["All", ...Array.from(new Set(projects.flatMap((p) => p.tags)))];
 
-function DecorativePanel({ index, accent, isMobile }: { index: number; accent: string; isMobile: boolean }) {
+// Per-position layout config — drives image aspect, column span, and stagger offset
+// Designed for the 6-project bento grid; repeats for filtered subsets
+const LAYOUTS = [
+  { colSpan: 2, imageAspect: "aspect-[16/9]", mt: 0,  horizontal: false }, // 0: wide, landscape
+  { colSpan: 1, imageAspect: "aspect-[3/4]",  mt: 32, horizontal: false }, // 1: portrait, dropped
+  { colSpan: 1, imageAspect: "aspect-[4/3]",  mt: 0,  horizontal: false }, // 2: normal
+  { colSpan: 1, imageAspect: "aspect-[4/3]",  mt: 40, horizontal: false }, // 3: normal, dropped
+  { colSpan: 1, imageAspect: "aspect-[4/3]",  mt: 16, horizontal: false }, // 4: normal, slight drop
+  { colSpan: 3, imageAspect: "",              mt: 0,  horizontal: true  }, // 5: full-width horizontal
+] as const;
+
+// ── Image placeholder ───────────────────────────────────────────────────────
+
+function ImgPlaceholder({ accent, className = "" }: { accent: string; className?: string }) {
   return (
-    <motion.div
-      className="md:w-52 lg:w-60 flex-shrink-0 flex items-center justify-center relative overflow-hidden min-h-52 select-none"
-      style={{ backgroundColor: `${accent}0a` }}
-      whileHover={isMobile ? undefined : { backgroundColor: accent + "18" }}
-      transition={{ duration: 0.3 }}
-    >
-      {/* Dot grid */}
+    <div className={`relative overflow-hidden w-full flex-shrink-0 ${className}`} style={{ backgroundColor: `${accent}08` }}>
       <div
         className="absolute inset-0"
-        style={{
-          backgroundImage: `radial-gradient(circle, ${accent}38 1px, transparent 1px)`,
-          backgroundSize: "20px 20px",
-        }}
+        style={{ backgroundImage: `radial-gradient(circle, ${accent}28 1px, transparent 1px)`, backgroundSize: "18px 18px" }}
       />
-      {/* Large project number */}
-      <motion.span
-        className="relative font-black font-mono leading-none"
-        style={{
-          color: `${accent}1c`,
-          fontSize: "clamp(5rem, 10vw, 8rem)",
-        }}
-      >
-        {String(index + 1).padStart(2, "0")}
-      </motion.span>
-      {/* Accent line */}
-      <div
-        className={`absolute top-0 bottom-0 w-[3px] ${index % 2 === 1 ? "right-0" : "left-0"}`}
-        style={{ backgroundColor: accent }}
-      />
-    </motion.div>
+      <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ backgroundColor: accent }} />
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center border" style={{ backgroundColor: `${accent}10`, borderColor: `${accent}30` }}>
+          <ImageIcon className="h-4 w-4" style={{ color: `${accent}70` }} />
+        </div>
+        <span className="text-[10px] font-mono uppercase tracking-widest" style={{ color: `${accent}45` }}>preview</span>
+      </div>
+    </div>
   );
 }
 
-function ProjectCard({ project, index, isMobile }: { project: Project; index: number; isMobile: boolean }) {
-  const ref = useRef(null);
-  const navigate = useNavigate();
-  const isInView = useInView(ref, { once: true, margin: "-60px" });
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  // Parallax zeroed on mobile - still creates subscription but avoids per-card rAF overhead
-  const cardY = useTransform(scrollYProgress, [0, 1], isMobile ? [0, 0] : [30, -30]);
+// ── Single project card ─────────────────────────────────────────────────────
 
-  const handleCardClick = (e: React.MouseEvent) => {
-    // Don't navigate if user was dragging to select text
+function ProjectCard({ project, layoutIndex, isMobile }: { project: Project; layoutIndex: number; isMobile: boolean }) {
+  const ref = useRef<HTMLElement>(null);
+  const navigate = useNavigate();
+  const inView = useInView(ref, { once: true, margin: "-40px" });
+  const layout = LAYOUTS[layoutIndex % LAYOUTS.length];
+  const { setOrigin } = useCardTransition();
+
+  const handleClick = (e: React.MouseEvent) => {
     if (window.getSelection()?.toString()) return;
-    // Let native link/button handlers do their thing
     if ((e.target as HTMLElement).closest("a, button")) return;
-    if (project.slug) navigate(`/projects/${project.slug}`);
+    if (project.slug) {
+      const el = ref.current;
+      if (el) {
+        const r = el.getBoundingClientRect();
+        setOrigin({ top: r.top, left: r.left, width: r.width, height: r.height, accent: project.accent });
+      }
+      navigate(`/projects/${project.slug}`);
+    }
   };
 
-  return (
-    <motion.div
+  const inner = (
+    <motion.article
       ref={ref}
-      initial={{ opacity: 0, y: 40 }}
-      animate={{ opacity: isInView ? 1 : 0, y: isInView ? 0 : 40 }}
-      transition={{ duration: 0.55, delay: index * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
-      style={{ y: cardY }}
-      className="glass-card rounded-lg overflow-hidden transition-shadow hover:shadow-lg cursor-pointer"
-      whileHover={isMobile ? undefined : { scale: 1.012, y: -4, boxShadow: "0 20px 48px rgba(0,0,0,0.25)" }}
-      whileTap={{ scale: 0.995 }}
-      onClick={handleCardClick}
+      initial={{ opacity: 0, y: 28 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.55, delay: layoutIndex * 0.07, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className="glass-card rounded-xl overflow-hidden cursor-pointer h-full flex flex-col"
+      whileHover={isMobile ? undefined : { y: -5, boxShadow: "0 24px 56px rgba(0,0,0,0.22)" }}
+      whileTap={{ scale: 0.99 }}
+      onClick={handleClick}
     >
-      <SpotlightCard
-        className={`rounded-lg flex flex-col md:flex-row gap-0 w-full overflow-hidden${
-          index % 2 === 1 ? " md:flex-row-reverse" : ""
-        }`}
-      >
-        <DecorativePanel index={index} accent={project.accent} isMobile={isMobile} />
-
-        <div className="flex-1 p-4 sm:p-8 space-y-4">
-          <h3
-            className="text-2xl font-semibold"
-            style={{
-              background: `linear-gradient(135deg, rgb(var(--foreground)), ${project.accent})`,
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            {project.title}
-          </h3>
-          <p className="text-muted-foreground leading-relaxed">{project.description}</p>
-          <div className="flex flex-wrap gap-2">
-            {project.tags.map((tag) => (
-              <motion.span
-                key={tag}
-                className="rounded-full px-3 py-1 text-xs font-medium border"
-                style={{
-                  borderColor: `${project.accent}40`,
-                  backgroundColor: `${project.accent}10`,
-                  color: project.accent,
-                }}
-                whileHover={isMobile ? undefined : { scale: 1.1, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-              >
-                {tag}
-              </motion.span>
-            ))}
-          </div>
-          <div className="pt-2 flex flex-wrap gap-2">
-            {project.link && (
-              <motion.div
-                whileHover={isMobile ? undefined : { x: 4 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                style={{ display: "inline-block" }}
-              >
-                <Button
-                  variant="outline"
-                  size="sm"
-                  asChild
-                  style={{ borderColor: `${project.accent}40` }}
-                  className="hover:bg-muted/50"
-                >
+      {!layout.horizontal ? (
+        <>
+          {/* Vertical card — image on top */}
+          <ImgPlaceholder accent={project.accent} className={layout.imageAspect} />
+          <div className="flex-1 p-5 space-y-3">
+            <div className="flex flex-wrap gap-1.5">
+              {project.tags.slice(0, 3).map((tag) => (
+                <span key={tag} className="rounded-full px-2.5 py-0.5 text-[11px] font-medium border"
+                  style={{ borderColor: `${project.accent}35`, backgroundColor: `${project.accent}0d`, color: project.accent }}>
+                  {tag}
+                </span>
+              ))}
+            </div>
+            <h3 className="font-display font-semibold leading-snug"
+              style={{
+                fontSize: layoutIndex === 0 ? "clamp(1.5rem, 2.5vw, 2rem)" : "1.25rem",
+                background: `linear-gradient(135deg, rgb(var(--foreground)), ${project.accent})`,
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+              }}>
+              {project.title}
+            </h3>
+            <p className={`text-muted-foreground leading-relaxed ${layoutIndex === 0 ? "text-sm" : "text-xs line-clamp-3"}`}>
+              {project.description}
+            </p>
+            <div className="flex items-center gap-2 pt-1 flex-wrap">
+              {project.link && (
+                <Button variant="outline" size="sm" asChild style={{ borderColor: `${project.accent}40` }} className="text-xs h-7 px-2.5">
                   <a href={project.link.href} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-4 w-4" />
-                    {project.link.label}
+                    <ExternalLink className="h-3 w-3" />{project.link.label}
                   </a>
                 </Button>
-              </motion.div>
-            )}
-            {project.slug && (
-              <motion.div
-                whileHover={isMobile ? undefined : { x: 4 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                style={{ display: "inline-block" }}
-              >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  asChild
-                  style={{ color: project.accent }}
-                  className="hover:bg-muted/50"
-                >
-                  <Link to={`/projects/${project.slug}`}>
-                    View Details →
+              )}
+              {project.slug && (
+                <Button variant="ghost" size="sm" asChild style={{ color: project.accent }} className="text-xs h-7 px-2">
+                  <Link to={`/projects/${project.slug}`} className="inline-flex items-center gap-1">
+                    Details <ArrowRight className="h-3 w-3" />
                   </Link>
                 </Button>
-              </motion.div>
-            )}
+              )}
+            </div>
+          </div>
+        </>
+      ) : (
+        /* Horizontal card — image left, content right */
+        <div className="flex flex-col sm:flex-row h-full">
+          <ImgPlaceholder accent={project.accent} className="sm:w-72 sm:h-auto aspect-[4/3] sm:aspect-auto flex-shrink-0" />
+          <div className="flex-1 p-6 md:p-8 space-y-4 flex flex-col justify-center">
+            <div className="flex flex-wrap gap-1.5">
+              {project.tags.map((tag) => (
+                <span key={tag} className="rounded-full px-2.5 py-0.5 text-[11px] font-medium border"
+                  style={{ borderColor: `${project.accent}35`, backgroundColor: `${project.accent}0d`, color: project.accent }}>
+                  {tag}
+                </span>
+              ))}
+            </div>
+            <h3 className="font-display font-semibold leading-snug"
+              style={{
+                fontSize: "clamp(1.5rem, 2.5vw, 2rem)",
+                background: `linear-gradient(135deg, rgb(var(--foreground)), ${project.accent})`,
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+              }}>
+              {project.title}
+            </h3>
+            <p className="text-muted-foreground leading-relaxed text-sm">{project.description}</p>
+            <div className="flex items-center gap-2 flex-wrap">
+              {project.link && (
+                <Button variant="outline" size="sm" asChild style={{ borderColor: `${project.accent}40` }}>
+                  <a href={project.link.href} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-3.5 w-3.5" />{project.link.label}
+                  </a>
+                </Button>
+              )}
+              {project.slug && (
+                <Button variant="ghost" size="sm" asChild style={{ color: project.accent }}>
+                  <Link to={`/projects/${project.slug}`} className="inline-flex items-center gap-1">
+                    View Details <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
+                </Button>
+              )}
+            </div>
           </div>
         </div>
-      </SpotlightCard>
-    </motion.div>
+      )}
+    </motion.article>
+  );
+
+  return (
+    <div
+      style={{
+        gridColumn: `span ${layout.colSpan} / span ${layout.colSpan}`,
+        marginTop: isMobile ? 0 : layout.mt,
+      }}
+    >
+      {inner}
+    </div>
   );
 }
+
+// ── Section ─────────────────────────────────────────────────────────────────
 
 export default function Projects() {
   const isMobile = useIsMobile();
   const [activeFilter, setActiveFilter] = useState("All");
-  const sectionRef = useRef(null);
-  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start end", "end start"] });
+  const sectionRef = useRef<HTMLElement>(null);
 
-  const headingY = useTransform(scrollYProgress, [0, 0.5], isMobile ? [0, 0] : [40, -20]);
-  const chipsY   = useTransform(scrollYProgress, [0, 0.5], isMobile ? [0, 0] : [30, -10]);
-
-  const filteredProjects =
-    activeFilter === "All"
-      ? projects
-      : projects.filter((p) => p.tags.includes(activeFilter));
+  const filtered = activeFilter === "All" ? projects : projects.filter((p) => p.tags.includes(activeFilter));
 
   const chipsRef = useRef(null);
   const chipsInView = useInView(chipsRef, { once: true, margin: "-40px" });
 
   return (
-    <section
-      id="projects"
-      ref={sectionRef}
-      className="min-h-screen flex flex-col justify-center md:px-4 py-24"
-    >
-      <div className="container mx-auto max-w-5xl space-y-12">
-        <motion.div className="space-y-3" style={{ y: headingY }}>
+    <section id="projects" className="py-24" ref={sectionRef}>
+      <div className="container mx-auto max-w-6xl px-4 md:px-8 space-y-10">
+
+        {/* Header */}
+        <div className="space-y-3">
+          <motion.div className="section-label"
+            initial={{ opacity: 0, x: -16 }} whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-80px" }} transition={{ duration: 0.5 }}>
+            <span className="section-label-bar" />
+            <span className="section-label-text">Projects</span>
+          </motion.div>
           <motion.h2
-            className="text-4xl font-bold tracking-tight"
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            whileHover={isMobile ? undefined : { x: 3 }}
-          >
+            className="font-display font-bold tracking-tight"
+            style={{ fontSize: "clamp(2.5rem, 5vw, 3.5rem)" }}
+            initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }} transition={{ duration: 0.6 }}
+            whileHover={isMobile ? undefined : { x: 3 }}>
             My Projects
           </motion.h2>
-          <motion.p
-            className="text-muted-foreground text-lg"
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-          >
+          <motion.p className="text-muted-foreground text-lg"
+            initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }} transition={{ duration: 0.6, delay: 0.1 }}>
             Things I've built that I'm proud of.
           </motion.p>
-        </motion.div>
+        </div>
 
-        <motion.div
-          ref={chipsRef}
-          style={{ y: chipsY }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: chipsInView ? 1 : 0, y: chipsInView ? 0 : 20 }}
-          transition={{ duration: 0.4 }}
-          className="flex flex-wrap gap-2"
-        >
+        {/* Filter chips */}
+        <motion.div ref={chipsRef}
+          initial={{ opacity: 0, y: 16 }} animate={{ opacity: chipsInView ? 1 : 0, y: chipsInView ? 0 : 16 }}
+          transition={{ duration: 0.4 }} className="flex flex-wrap gap-2">
           {allTags.map((tag) => (
-            <motion.button
-              key={tag}
-              onClick={() => setActiveFilter(tag)}
+            <motion.button key={tag} onClick={() => setActiveFilter(tag)}
               className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
                 activeFilter === tag
                   ? "bg-primary text-primary-foreground"
                   : "border border-border bg-muted/50 text-muted-foreground hover:bg-muted"
               }`}
-              whileHover={isMobile ? undefined : { scale: 1.08, y: -2 }}
-              whileTap={{ scale: 0.93 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            >
+              whileHover={isMobile ? undefined : { scale: 1.06, y: -2 }}
+              whileTap={{ scale: 0.94 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}>
               {tag}
             </motion.button>
           ))}
         </motion.div>
 
-        <div className="space-y-8">
-          {filteredProjects.map((project, i) => (
-            <ProjectCard key={project.title} project={project} index={i} isMobile={isMobile} />
+        {/* Bento grid — 3 cols on desktop, staggered heights */}
+        <div
+          className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 items-start"
+        >
+          {filtered.map((project, i) => (
+            <ProjectCard key={project.title} project={project} layoutIndex={i} isMobile={isMobile} />
           ))}
         </div>
+
       </div>
     </section>
   );

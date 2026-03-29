@@ -7,13 +7,14 @@ import { Button } from "@/components/ui/button";
 import { useTheme } from "@/hooks/useTheme";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useState, useEffect } from "react";
+import { SectionProvider } from "@/context/SectionContext";
 
-function Navbar() {
+function Navbar({ activeSection }: { activeSection: string }) {
   const isMobile = useIsMobile();
   const location = useLocation();
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
-  const [activeSection, setActiveSection] = useState<string>("#intro");
+  const [mouseNearTop, setMouseNearTop] = useState(false);
 
   const navLinks = [
     { name: "Home", href: "#intro", icon: Home },
@@ -22,31 +23,16 @@ function Navbar() {
     { name: "Contact", href: "#contact", icon: Mail },
   ];
 
+  // Navbar no longer manages intersection observers — Layout/SectionProvider does.
+
   useEffect(() => {
-    const sectionIds = navLinks.map((link) => link.href.slice(1));
-    const observers: IntersectionObserver[] = [];
+    if (isMobile) return;
+    const onMouseMove = (e: MouseEvent) => setMouseNearTop(e.clientY < 80);
+    window.addEventListener("mousemove", onMouseMove);
+    return () => window.removeEventListener("mousemove", onMouseMove);
+  }, [isMobile]);
 
-    sectionIds.forEach((id) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            setActiveSection(`#${id}`);
-          }
-        },
-        { rootMargin: "-40% 0px -55% 0px", threshold: 0 }
-      );
-
-      observer.observe(el);
-      observers.push(observer);
-    });
-
-    return () => {
-      observers.forEach((obs) => obs.disconnect());
-    };
-  }, []);
+  const hidden = location.pathname === "/" && activeSection === "#intro" && !mouseNearTop && !isMobile;
 
   const handleNav = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
@@ -59,7 +45,11 @@ function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <motion.header
+      className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      animate={{ y: hidden ? "-100%" : "0%" }}
+      transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+    >
       <div className="container flex h-14 items-center px-4 md:px-8 mx-auto">
         <div className="mr-4 md:mr-8 flex items-center gap-2">
           <motion.div
@@ -147,7 +137,7 @@ function Navbar() {
           </motion.div>
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 }
 
@@ -168,14 +158,81 @@ function Footer() {
 }
 
 export function Layout() {
+  const [activeSection, setActiveSection] = useState<string>("#intro");
+  const location = useLocation();
+
+  useEffect(() => {
+    const sectionIds = ["intro", "about", "projects", "contact"];
+    const observers: IntersectionObserver[] = [];
+    let retryTimer: number | null = null;
+
+    const observerOptions = { rootMargin: "-40% 0px -55% 0px", threshold: 0 } as IntersectionObserverInit;
+
+    sectionIds.forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            setActiveSection(`#${id}`);
+          }
+        },
+        observerOptions
+      );
+
+      observer.observe(el);
+      observers.push(observer);
+    });
+
+    // If the page was loaded with a hash (deep link), prefer that section when possible.
+    if (location.hash) {
+      const el = document.querySelector(location.hash);
+      if (el) {
+        setActiveSection(location.hash);
+      } else {
+        // Children might mount slightly later; try again shortly after.
+        retryTimer = window.setTimeout(() => {
+          const e = document.querySelector(location.hash);
+          if (e) setActiveSection(location.hash);
+        }, 120);
+      }
+    } else {
+      // No hash — pick the closest section to the current scroll position as initial state.
+      const docY = window.scrollY;
+      let closestId = sectionIds[0];
+      let closestDist = Infinity;
+      sectionIds.forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const top = Math.round(el.getBoundingClientRect().top + window.scrollY);
+        const dist = Math.abs(docY - top);
+        if (dist < closestDist) {
+          closestDist = dist;
+          closestId = id;
+        }
+      });
+      setActiveSection(`#${closestId}`);
+    }
+
+    return () => {
+      observers.forEach((obs) => obs.disconnect());
+      if (retryTimer) clearTimeout(retryTimer);
+    };
+    // Intentionally only run on mount + location changes (to handle deep links)
+  }, [location.hash]);
+
   return (
-    <div className="relative flex min-h-screen flex-col bg-transparent text-foreground">
-      <MouseGradient />
-      <Navbar />
-      <main className="flex-1 flex flex-col px-1 md:px-0">
-        <Outlet />
-      </main>
-      <Footer />
-    </div>
+    <SectionProvider value={{ activeSection, setActiveSection }}>
+      <div className="relative flex min-h-screen flex-col bg-transparent text-foreground">
+        <MouseGradient />
+        <Navbar activeSection={activeSection} />
+        <main className="flex-1 flex flex-col px-1 md:px-0 relative">
+          <Outlet />
+        </main>
+        {/* Footer only on non-home pages; home uses Contact's built-in footer row */}
+        {location.pathname !== "/" && <Footer />}
+      </div>
+    </SectionProvider>
   );
 }

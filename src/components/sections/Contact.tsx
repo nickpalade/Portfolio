@@ -1,8 +1,9 @@
 import { useRef, useState } from "react";
-import { Mail, Github, Linkedin, FileText, Copy, Check } from "lucide-react";
+import { Mail, Github, Linkedin, FileText, Copy, Check, ImageIcon } from "lucide-react";
 import { motion, useInView } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+
 
 const EMAILS = {
   personal: "npalade09@gmail.com",
@@ -12,8 +13,8 @@ const EMAILS = {
 type EmailKey = keyof typeof EMAILS;
 
 export default function Contact() {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(cardRef, { once: true, margin: "-10% 0px" });
+  const sectionRef = useRef<HTMLElement>(null);
+  const inView = useInView(sectionRef, { once: true, margin: "-80px" });
 
   const [activeEmail, setActiveEmail] = useState<EmailKey | null>(null);
   const [copied, setCopied] = useState(false);
@@ -31,149 +32,190 @@ export default function Contact() {
   };
 
   return (
-    <section id="contact" className="min-h-[60vh] flex flex-col justify-center md:px-4 py-24">
-      <div className="container mx-auto max-w-2xl text-center space-y-8 fade-in">
-        <div className="space-y-3">
-          <motion.h2
-            className="text-4xl font-bold tracking-tight"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-          >
-            Get in Touch
-          </motion.h2>
-          <motion.p
-            className="text-muted-foreground text-lg leading-relaxed"
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-          >
-            Have a project in mind or just want to say hello? My inbox is open.
-          </motion.p>
-        </div>
+    <section id="contact" className="bg-[#0d0d12] text-white overflow-hidden relative" ref={sectionRef}>
+      {/* Subtle primary glow at top edge */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2/3 h-px bg-gradient-to-r from-transparent via-[rgba(121,144,219,0.5)] to-transparent" />
 
-        <motion.div
-          ref={cardRef}
-          initial={{ opacity: 0, y: 40, boxShadow: "0 0px 0px rgba(121,144,219,0)" }}
-          animate={isInView ? { opacity: 1, y: 0, boxShadow: "0 0px 0px rgba(121,144,219,0)" } : { opacity: 0, y: 40, boxShadow: "0 0px 0px rgba(121,144,219,0)" }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-          className="glass-card rounded-lg p-6 sm:p-10 space-y-6"
-          whileHover={{ boxShadow: "0 24px 64px rgba(121,144,219,0.25)" }}
-        >
+      <div className="container mx-auto max-w-6xl px-4 md:px-8">
+        <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-stretch min-h-[520px]">
+
+          {/* LEFT — text + CTA */}
           <motion.div
-            className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary mx-auto"
-            whileHover={{ scale: 1.15, rotate: [0, -10, 10, -5, 0] }}
-            transition={{ duration: 0.5 }}
+            className="flex flex-col justify-center py-16 md:py-24 space-y-8"
+            initial={{ opacity: 0, x: -24 }}
+            animate={inView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            <Mail className="h-8 w-8" />
-          </motion.div>
-          <p className="text-muted-foreground">
-            The best way to reach me is by email. I'll get back to you as soon as I can.
-          </p>
+            {/* Section label — light version */}
+            <div className="flex items-center gap-2.5">
+              <span className="block w-1.5 h-5 rounded-full bg-[rgb(121,144,219)] flex-shrink-0" />
+              <span className="text-xs font-mono uppercase tracking-[0.18em] text-[rgba(121,144,219,0.8)]">
+                Contact
+              </span>
+            </div>
 
-          {/* Email buttons + hover copy row — outer div owns the leave handler so the
-              copy button stays visible when moving from a button down onto it */}
-          <div
-            className="flex flex-col items-center gap-3"
-            onMouseLeave={() => setActiveEmail(null)}
-          >
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <motion.div
-                onMouseEnter={() => activateEmail("personal")}
-                whileHover={{ scale: 1.04, y: -2 }}
-                whileTap={{ scale: 0.97 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                style={{ display: "inline-block" }}
+            <div className="space-y-4">
+              <h2
+                className="font-display font-bold tracking-tight leading-tight text-white"
+                style={{ fontSize: "clamp(2.5rem, 5vw, 3.75rem)" }}
               >
-                <Button size="lg" asChild>
-                  <a href="mailto:npalade09@gmail.com">
-                    <Mail className="h-4 w-4" />
-                    Personal
-                  </a>
-                </Button>
-              </motion.div>
-              <motion.div
-                onMouseEnter={() => activateEmail("business")}
-                whileHover={{ scale: 1.04, y: -2 }}
-                whileTap={{ scale: 0.97 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                style={{ display: "inline-block" }}
+                Get in Touch
+              </h2>
+
+            </div>
+
+            {/* Email buttons */}
+            <div
+              className="space-y-4"
+              onMouseLeave={() => setActiveEmail(null)}
+            >
+              <div className="flex flex-col sm:flex-row gap-3">
+                <motion.div
+                  onMouseEnter={() => activateEmail("personal")}
+                  whileHover={{ scale: 1.03, y: -2 }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                >
+                  <Button
+                    size="lg"
+                    asChild
+                    className="bg-[rgb(121,144,219)] hover:bg-[rgb(140,160,230)] text-white border-0"
+                    style={{ minHeight: "3.5rem", paddingLeft: "2rem", paddingRight: "2rem" }}
+                  >
+                    <a href="mailto:npalade09@gmail.com">
+                      <Mail className="h-4 w-4 mr-2" />
+                      Personal Email
+                    </a>
+                  </Button>
+                </motion.div>
+                <motion.div
+                  onMouseEnter={() => activateEmail("business")}
+                  whileHover={{ scale: 1.03, y: -2 }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                >
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    asChild
+                    className="border-white/20 text-white hover:bg-white/10 hover:text-white"
+                    style={{ minHeight: "3.5rem", paddingLeft: "2rem", paddingRight: "2rem" }}
+                  >
+                    <a href="mailto:nick.a.palade@gmail.com">
+                      <Mail className="h-4 w-4 mr-2" />
+                      Business Email
+                    </a>
+                  </Button>
+                </motion.div>
+              </div>
+
+              {/* Copy address */}
+              <button
+                onClick={handleCopy}
+                disabled={!activeEmail}
+                className="flex items-center gap-1.5 text-sm text-white/40 hover:text-white/70 transition-[opacity,color] duration-150"
+                style={{ opacity: activeEmail ? 1 : 0, pointerEvents: activeEmail ? "auto" : "none" }}
               >
-                <Button size="lg" variant="outline" asChild>
-                  <a href="mailto:nick.a.palade@gmail.com">
-                    <Mail className="h-4 w-4" />
-                    Business
-                  </a>
+                {copied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
+                <span className={copied ? "text-green-400" : ""}>
+                  {copied ? "Copied!" : activeEmail ? EMAILS[activeEmail] : "\u00a0"}
+                </span>
+              </button>
+            </div>
+
+            {/* Social links */}
+            <div className="flex items-center gap-3 pt-2">
+              {[
+                { icon: Github, href: "https://github.com/nickpalade", label: "GitHub" },
+                { icon: Linkedin, href: "https://www.linkedin.com/in/nick-palade-7a9154262/", label: "LinkedIn" },
+              ].map(({ icon: Icon, href, label }) => (
+                <motion.div
+                  key={label}
+                  whileHover={{ y: -3, scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                >
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    asChild
+                    title={label}
+                    className="border-white/20 text-white/60 hover:bg-white/10 hover:text-white"
+                  >
+                    <a href={href} target="_blank" rel="noopener noreferrer">
+                      <Icon className="h-5 w-5" />
+                    </a>
+                  </Button>
+                </motion.div>
+              ))}
+              <motion.div
+                whileHover={{ y: -3, scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                transition={{ type: "spring", stiffness: 400, damping: 15 }}
+              >
+                <Button
+                  variant="outline"
+                  size="icon"
+                  asChild
+                  title="View CV"
+                  className="border-white/20 text-white/60 hover:bg-white/10 hover:text-white"
+                >
+                  <Link to="/cv">
+                    <FileText className="h-5 w-5" />
+                  </Link>
                 </Button>
               </motion.div>
             </div>
+          </motion.div>
 
-            {/* Copy button — always in DOM to avoid layout shift; hidden when no email is active */}
-            <button
-              onClick={handleCopy}
-              disabled={!activeEmail}
-              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-[opacity,color] duration-150"
-              style={{
-                opacity: activeEmail ? 1 : 0,
-                pointerEvents: activeEmail ? "auto" : "none",
-              }}
-            >
-              {copied
-                ? <Check className="h-3.5 w-3.5 text-green-500" />
-                : <Copy className="h-3.5 w-3.5" />
-              }
-              <span className={copied ? "text-green-500" : ""}>
-                {copied ? "Copied!" : activeEmail ? EMAILS[activeEmail] : "\u00a0"}
+          {/* RIGHT — image placeholder (like Algoverse's CTA image) */}
+          <motion.div
+            className="relative hidden md:flex items-stretch"
+            initial={{ opacity: 0, x: 24 }}
+            animate={inView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.7, delay: 0.15, ease: [0.25, 0.46, 0.45, 0.94] }}
+          >
+            <div className="absolute inset-y-8 left-0 right-0 rounded-2xl overflow-hidden border border-white/10">
+              {/* Dot grid background */}
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: "radial-gradient(circle, rgba(121,144,219,0.2) 1px, transparent 1px)",
+                  backgroundSize: "22px 22px",
+                }}
+              />
+              {/* Warm overlay tint */}
+              <div className="absolute inset-0 bg-gradient-to-br from-[rgba(121,144,219,0.08)] via-transparent to-[rgba(165,180,252,0.06)]" />
+
+              {/* Placeholder content */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center border border-white/10 bg-white/5">
+                  <ImageIcon className="h-7 w-7 text-white/20" />
+                </div>
+                <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/20">
+                  Photo Placeholder
+                </span>
+              </div>
+
+              {/* Large faded "N" monogram */}
+              <span
+                className="absolute bottom-4 right-6 font-display font-black leading-none select-none pointer-events-none"
+                style={{ fontSize: "clamp(6rem, 12vw, 10rem)", color: "rgba(121,144,219,0.06)" }}
+              >
+                N
               </span>
-            </button>
-          </div>
+            </div>
+          </motion.div>
 
-          <div className="flex items-center justify-center gap-3 pt-2">
-            <motion.div
-              whileHover={{ y: -4, scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              transition={{ type: "spring", stiffness: 400, damping: 15 }}
-            >
-              <Button variant="outline" size="icon" asChild title="GitHub">
-                <a
-                  href="https://github.com/nickpalade"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Github className="h-5 w-5" />
-                </a>
-              </Button>
-            </motion.div>
-            <motion.div
-              whileHover={{ y: -4, scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              transition={{ type: "spring", stiffness: 400, damping: 15 }}
-            >
-              <Button variant="outline" size="icon" asChild title="LinkedIn">
-                <a
-                  href="https://www.linkedin.com/in/nick-palade-7a9154262/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Linkedin className="h-5 w-5" />
-                </a>
-              </Button>
-            </motion.div>
-            <motion.div
-              whileHover={{ y: -4, scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              transition={{ type: "spring", stiffness: 400, damping: 15 }}
-            >
-              <Button variant="outline" size="icon" asChild title="View CV">
-                <Link to="/cv">
-                  <FileText className="h-5 w-5" />
-                </Link>
-              </Button>
-            </motion.div>
-          </div>
-        </motion.div>
+        </div>
+      </div>
+
+      {/* Footer row */}
+      <div className="border-t border-white/10 py-5">
+        <div className="container mx-auto max-w-6xl px-4 md:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-white/30 font-mono">
+          <span>&copy; {new Date().getFullYear()} Nick Palade. All rights reserved.</span>
+          <span>Built with React + TypeScript + Tailwind</span>
+        </div>
       </div>
     </section>
   );

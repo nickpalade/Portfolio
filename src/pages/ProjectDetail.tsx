@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { motion, useInView, AnimatePresence } from "framer-motion";
+import { motion, useInView, AnimatePresence, useAnimation } from "framer-motion";
+import { useCardTransition } from "@/context/CardTransitionContext";
 import {
   Cpu,
   Camera,
@@ -369,6 +370,11 @@ export default function ProjectDetail() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const { origin, setOrigin } = useCardTransition();
+  // Snapshot origin at mount — the context value may be cleared before animation completes
+  const [snapshotOrigin] = useState(origin);
+  const overlayControls = useAnimation();
+  const [contentVisible, setContentVisible] = useState(!origin);
 
   const navigateToProject = useCallback(
     async (targetSlug: string) => {
@@ -379,6 +385,35 @@ export default function ProjectDetail() {
     },
     [navigate]
   );
+
+  // Card-expand entry animation
+  useEffect(() => {
+    if (!snapshotOrigin) return;
+    let cancelled = false;
+
+    async function runTransition() {
+      await overlayControls.start({
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        borderRadius: 0,
+        transition: { duration: 0.52, ease: [0.76, 0, 0.24, 1] },
+      });
+      if (cancelled) return;
+      setContentVisible(true);
+      await overlayControls.start({
+        opacity: 0,
+        transition: { duration: 0.3, ease: "easeOut" },
+      });
+      if (cancelled) return;
+      setOrigin(null);
+    }
+
+    runTransition();
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const project = projects.find((p) => p.slug === slug);
 
@@ -408,7 +443,30 @@ export default function ProjectDetail() {
   const nextProject = projects[(currentIdx + 1) % projects.length];
 
   return (
-    <article className="w-full">
+    <>
+      {/* ── Card-expand entry overlay ─────────────────────────────────────────── */}
+      {snapshotOrigin && (
+        <motion.div
+          className="pointer-events-none"
+          style={{
+            position: "fixed",
+            zIndex: 9998,
+            backgroundColor: snapshotOrigin.accent,
+            borderRadius: 12,
+            top: snapshotOrigin.top,
+            left: snapshotOrigin.left,
+            width: snapshotOrigin.width,
+            height: snapshotOrigin.height,
+          }}
+          animate={overlayControls}
+        />
+      )}
+    <motion.article
+      className="w-full"
+      initial={snapshotOrigin ? { opacity: 0 } : false}
+      animate={contentVisible ? { opacity: 1 } : { opacity: 0 }}
+      transition={snapshotOrigin ? { duration: 0.35, ease: "easeOut" } : undefined}
+    >
       {/* ── Page transition overlay ───────────────────────────────────────────── */}
       <AnimatePresence>
         {isTransitioning && (
@@ -664,6 +722,7 @@ export default function ProjectDetail() {
           </Section>
         </div>
       </div>
-    </article>
+    </motion.article>
+    </>
   );
 }

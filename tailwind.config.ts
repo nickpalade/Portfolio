@@ -16,6 +16,7 @@ export default {
       fontFamily: {
         sans: ["DM Sans", "system-ui", "sans-serif"],
         mono: ["Space Mono", "monospace"],
+        display: ["Cormorant Garamond", "Georgia", "serif"],
       },
       colors: {
         border: "rgb(var(--border))",

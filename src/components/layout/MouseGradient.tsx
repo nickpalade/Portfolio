@@ -250,7 +250,7 @@ export function MouseGradient() {
       scrollVel = window.scrollY - lastScrollY;
       lastScrollY = window.scrollY;
       smoothScrollVel += (scrollVel - smoothScrollVel) * 0.14;
-      lagScrollY += (window.scrollY - lagScrollY) * 0.015;
+      lagScrollY += (window.scrollY - lagScrollY) * 0.05;
 
       ctx.clearRect(0, 0, cw, ch);
       ctx.globalCompositeOperation = isDark ? "lighter" : "multiply";
@@ -267,7 +267,7 @@ export function MouseGradient() {
         const mouseOffsetY = noMouse ? 0 : -(smoothMouseY - 0.5) * blob.mouseDepth * 2;
 
         const lagOffset = (lagScrollY - window.scrollY) * blob.scrollDepth * 0.18;
-        const velOffset = -smoothScrollVel * blob.scrollDepth * 3.2;
+        const velOffset = -smoothScrollVel * blob.scrollDepth * 2.4;
         const scrollOffsetY = lagOffset + velOffset;
 
         // Convert fractional positions to canvas pixel coordinates.

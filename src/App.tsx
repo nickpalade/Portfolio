@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "./components/layout/Layout";
 import Home from "./pages/Home";
 import { PerformanceProvider } from "./context/PerformanceContext";
+import { CardTransitionProvider } from "./context/CardTransitionContext";
 
 // Defer CV, ProjectDetail, and NotFound — not needed on initial load
 const CV = lazy(() => import("./pages/CV"));
@@ -11,7 +12,8 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 
 const App = () => (
   <PerformanceProvider>
-  <BrowserRouter basename={import.meta.env.BASE_URL}>
+  <CardTransitionProvider>
+  <BrowserRouter basename={import.meta.env.BASE_URL} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
     <Routes>
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
@@ -21,6 +23,7 @@ const App = () => (
       </Route>
     </Routes>
   </BrowserRouter>
+  </CardTransitionProvider>
   </PerformanceProvider>
 );
 

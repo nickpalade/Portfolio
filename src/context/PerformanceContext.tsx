@@ -2,16 +2,18 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 
 interface PerformanceContextValue {
   isLowPerf: boolean;
+  isReducedScrollPerf: boolean;
 }
 
-const PerformanceContext = createContext<PerformanceContextValue>({ isLowPerf: false });
+const PerformanceContext = createContext<PerformanceContextValue>({ isLowPerf: false, isReducedScrollPerf: false });
 
 // ── Benchmark ────────────────────────────────────────────────────────────────
 // Runs ~500 K sqrt iterations. On modern desktop hardware this completes in
 // ~2–4 ms. At 6× CPU throttle it takes ~12–24 ms; at 10× it exceeds 30 ms.
 // This is a direct measure of main-thread execution speed.
 const BENCHMARK_ITERS     = 500_000;
-const BENCHMARK_THRESHOLD = 7; // ms — anything above this is "slow"
+// Dev mode React overhead inflates timing; use a higher threshold to avoid false positives.
+const BENCHMARK_THRESHOLD = import.meta.env.DEV ? 25 : 7; // ms
 
 function runBenchmark(): number {
   const start = performance.now();
@@ -30,6 +32,8 @@ function runBenchmark(): number {
 const WARMUP_MS      = 1000;
 const SAMPLE_MS      = 3000;
 const SLOW_THRESHOLD = 50;   // ms per frame (~20 fps)
+// Reduced-scroll mode threshold: 50fps -> 20ms per frame
+const REDUCED_SCROLL_THRESHOLD = 20; // ms per frame (~50 fps)
 const SLOW_RATIO     = 0.35; // 35 % of sampled frames must be slow
 
 // ── Shared logger ─────────────────────────────────────────────────────────────
@@ -44,8 +48,20 @@ function logLowPerf(reason: string, detail: string) {
   console.groupEnd();
 }
 
+function logReducedScroll(reason: string, detail: string) {
+  console.groupCollapsed(
+    "%c[Portfolio] Reduced-scroll performance mode activated",
+    "color:#60a5fa;font-weight:bold"
+  );
+  console.log(`Reason  : ${reason}`);
+  console.log(`Detail  : ${detail}`);
+  console.log("Effects : custom scrolling disabled (gravity). Other effects unchanged.");
+  console.groupEnd();
+}
+
 export function PerformanceProvider({ children }: { children: React.ReactNode }) {
   const [isLowPerf, setIsLowPerf] = useState(false);
+  const [isReducedScrollPerf, setIsReducedScrollPerf] = useState(false);
   const activatedRef = useRef(false);
   const rafRef = useRef<number>(0);
 
@@ -55,6 +71,13 @@ export function PerformanceProvider({ children }: { children: React.ReactNode })
     document.documentElement.classList.add("low-perf");
     logLowPerf(reason, detail);
     setIsLowPerf(true);
+  };
+
+  const activateReducedScroll = (reason: string, detail: string) => {
+    if (isReducedScrollPerf || activatedRef.current) return;
+    // do not flip the global activatedRef — reduced mode is lighter
+    setIsReducedScrollPerf(true);
+    logReducedScroll(reason, detail);
   };
 
   useEffect(() => {
@@ -101,6 +124,16 @@ export function PerformanceProvider({ children }: { children: React.ReactNode })
               `${slowCount}/${frameTimes.length} frames > ${SLOW_THRESHOLD} ms (${(ratio * 100).toFixed(0)}%), avg ${avg.toFixed(1)} ms`
             );
           }
+
+          // Check reduced-scroll threshold (50fps -> 20ms)
+          const slowCountReduced = frameTimes.filter(t => t > REDUCED_SCROLL_THRESHOLD).length;
+          const ratioReduced = slowCountReduced / frameTimes.length;
+          if (ratioReduced >= SLOW_RATIO) {
+            activateReducedScroll(
+              "Moderately low frame rate",
+              `${slowCountReduced}/${frameTimes.length} frames > ${REDUCED_SCROLL_THRESHOLD} ms (${(ratioReduced * 100).toFixed(0)}%), avg ${avg.toFixed(1)} ms`
+            );
+          }
         }
         return;
       }
@@ -117,7 +150,7 @@ export function PerformanceProvider({ children }: { children: React.ReactNode })
   }, []);
 
   return (
-    <PerformanceContext.Provider value={{ isLowPerf }}>
+    <PerformanceContext.Provider value={{ isLowPerf, isReducedScrollPerf }}>
       {children}
     </PerformanceContext.Provider>
   );

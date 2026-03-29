@@ -174,8 +174,9 @@ function useScrollGravity(enabled: boolean) {
 
 export default function Home() {
   const location = useLocation();
-  const { isLowPerf } = usePerformanceMode();
-  useScrollGravity(!isLowPerf);
+  const { isLowPerf, isReducedScrollPerf } = usePerformanceMode();
+  // disable gravity when either full low-perf or reduced-scroll mode is active
+  useScrollGravity(!(isLowPerf || isReducedScrollPerf));
 
   useEffect(() => {
     if (location.hash) {
